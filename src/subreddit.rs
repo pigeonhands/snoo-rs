@@ -6,7 +6,15 @@ use crate::ChildRedditItem;
 use crate::post::Post;
 use crate::endpoints::{self, SearchSort};
 
-use crate::search::SubredditSearch;
+use crate::search::PostSearch;
+use reqwest::Url;
+
+use chrono::{
+    DateTime,
+    Utc,
+    prelude::*,
+};
+
 
 use std::io;
 
@@ -33,15 +41,18 @@ impl<'r> SubredditLink<'r> {
         })
     }
 
+    pub fn name(&self) -> &str{
+        &self.subreddit
+    }
+
     pub async fn top(&self) -> io::Result<Vec<Post<'r>>> {
         let ep =  endpoints::SUBREDDIT_TOP.subreddit(&self.subreddit);
         Ok(Post::list_of(self.reddit, &self.reddit.get_list(ep).await?))
     }
 
-    pub async fn search<'s>(&'r self, query: &'s str, sort: SearchSort) -> io::Result<SubredditSearch<'r, 's>> {
+    pub async fn search<'s>(&'r self, query: &'s str, sort: SearchSort) -> io::Result<PostSearch<'r, 's>> {
         let search_ep = endpoints::SUBREDDIT_SEARCH.subreddit(&self.subreddit);
-        let res : SubredditSearch = SubredditSearch::new_search(self.reddit, search_ep, query, sort).await?;
-        Ok(res)
+        PostSearch::new_search(self.reddit, search_ep, query, sort).await
     }
 
 }
@@ -57,15 +68,37 @@ impl<'r> Subreddit<'r> {
     }
 
     pub fn name(&self) -> &str{
-        &self.link.subreddit
+        self.link.name()
+    }
+
+    pub fn title(&self) -> &str {
+        &self.info.title
+    }
+
+    pub fn subscribers(&self) -> Option<i32> {
+        self.info.subscribers
     }
 
     pub async fn top(&self) -> io::Result<Vec<Post<'r>>> {
        self.link.top().await
     }
 
-    pub async fn search<'s>(&'r self, query: &'s str, sort: SearchSort) -> io::Result<SubredditSearch<'r, 's>> {
+    pub async fn search<'s>(&'r self, query: &'s str, sort: SearchSort) -> io::Result<PostSearch<'r, 's>> {
         self.link.search(query, sort).await
+    }
+
+    pub fn url(&self) -> io::Result<Url> {
+        Url::parse(&self.info.url)
+            .map_err(|_| io::Error::new(io::ErrorKind::InvalidData, "Failed to parse url"))
+    }
+
+    pub fn created(&self) -> Option<DateTime<Utc>>{
+        if let Some(created) = self.info.created{
+            let naive_datetime = NaiveDateTime::from_timestamp(created as i64, 0);
+            Some(DateTime::from_utc(naive_datetime, Utc))
+        }else{
+            None
+        }
     }
 }
 

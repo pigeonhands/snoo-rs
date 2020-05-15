@@ -35,7 +35,6 @@ impl<'r> Post<'r> {
         self.info.url.as_ref()
     }
 
-
     pub fn subreddit(&self) -> SubredditLink<'r> {
         self.reddit.subreddit(&self.info.subreddit)
     }

@@ -1,8 +1,3 @@
-use chrono::{
-    DateTime,
-    Utc,
-    prelude::*,
-};
 
 use serde::{Deserialize};
 
@@ -24,14 +19,3 @@ pub struct SubredditInfo {
     pub user_is_banned: Option<bool>,
 }
 
-impl SubredditInfo {
-    pub fn created_utc(&self) -> Option<DateTime<Utc>> {
-        if let Some(created) = self.created{
-            let naive_datetime = NaiveDateTime::from_timestamp(created as i64, 0);
-            Some(DateTime::from_utc(naive_datetime, Utc))
-        }else{
-            None
-        }
-        
-    }
-}

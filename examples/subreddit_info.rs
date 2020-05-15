@@ -10,6 +10,6 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     println!("{}", info.title);
     println!("Subs: {:?}", info.subscribers);
-    println!("{}", info.created_utc());
+    println!("{:?}", info.created_utc());
     Ok(())
 }

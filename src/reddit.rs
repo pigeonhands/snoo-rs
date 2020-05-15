@@ -14,7 +14,6 @@ use crate::{
     user::RedditUser,
 };
 use crate::search::SearchResults;
-use crate::ChildRedditItem;
 
 use std::io;
 use reqwest::{Client, Url};
@@ -67,6 +66,13 @@ impl Reddit {
     pub (crate) async fn get_any(&self, ep: Endpoint) -> io::Result<RedditResponse> {
         self.create_request_ep::<RedditResponse>(ep).await
     }
+
+    pub (crate) async fn get_list<'r, T: DeserializeOwned>(&'r self, ep: Endpoint) -> io::Result<Vec<T>>{
+        let data = self.get_data::<ListingData<T>>(ep.as_api_endpoint()?).await?;
+        let infos = data.data.inner_children();
+        Ok(infos)
+    }
+
 
     pub fn subreddit(&self, name: &str) -> Subreddit {
         Subreddit{

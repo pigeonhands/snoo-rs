@@ -299,6 +299,8 @@ endpoints! {
     UPLOAD_IMAGE =>            "r/#subreddit/api/upload_sr_img",
     USER =>                    "user/#user/",
     USER_ABOUT =>              "user/#user/about/",
+    USER_SUBMITTED =>          "user/#user/submitted/",
+    USER_COMMENTS =>           "user/#user/comments/",
     USER_BY_FULLNAME =>        "/api/user_data_by_account_ids",
     USER_FLAIR =>              "r/#subreddit/api/user_flair_v2",
     USERS_NEW =>               "users/new",

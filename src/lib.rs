@@ -10,10 +10,11 @@ mod models;
 
 pub use reddit::Reddit;
 pub use endpoints::SearchSort;
+use serde::de::DeserializeOwned;
 
 pub (crate) trait ChildRedditItem<'r> {
-    type Metadata: Clone;
-    type DataType;
+    type Metadata: Clone+DeserializeOwned;
+    type DataType: 'r;
     fn from_parent(parent: &'r Reddit, info: Self::Metadata) -> Self::DataType;
 
     fn list_of(parent: &'r Reddit, data: &[Self::Metadata]) -> Vec<Self::DataType> {

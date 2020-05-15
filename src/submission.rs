@@ -63,3 +63,16 @@ impl<'r> Comment<'r>{
         &self.data
     }
 }
+
+
+impl<'r> ChildRedditItem<'r> for Comment<'r> {
+    type DataType = Comment<'r>;
+    type Metadata = CommentData;
+
+    fn from_parent(parent: &'r Reddit, info: Self::Metadata) -> Self{
+        Self{
+            reddit: parent,
+            data: info,
+        }
+    }
+}

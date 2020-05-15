@@ -8,12 +8,12 @@ use serde::{Deserialize};
 
 #[derive(Deserialize, Debug, Clone)]
 pub struct SubredditInfo {
-    pub created: f64,
+    pub created: Option<f64>,
     pub description: String,
-    pub description_html: String,
+    pub description_html: Option<String>,
     pub display_name: String,
-    pub header_img: String,
-    pub header_title: String,
+    pub header_img: Option<String>,
+    pub header_title: Option<String>,
     pub public_description: String,
     pub subscribers: Option<i32>,
     pub accounts_active: Option<i32>,
@@ -25,8 +25,13 @@ pub struct SubredditInfo {
 }
 
 impl SubredditInfo {
-    pub fn created_utc(&self) -> DateTime<Utc> {
-        let naive_datetime = NaiveDateTime::from_timestamp(self.created as i64, 0);
-        DateTime::from_utc(naive_datetime, Utc)
+    pub fn created_utc(&self) -> Option<DateTime<Utc>> {
+        if let Some(created) = self.created{
+            let naive_datetime = NaiveDateTime::from_timestamp(created as i64, 0);
+            Some(DateTime::from_utc(naive_datetime, Utc))
+        }else{
+            None
+        }
+        
     }
 }

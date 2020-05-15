@@ -4,6 +4,7 @@ mod vote;
 mod listing;
 mod comment;
 mod search;
+mod user;
 
 use serde::{Deserialize};
 
@@ -15,6 +16,7 @@ pub use crate::models::{
     listing::ListingData,
     comment::CommentData,
     search::SearchInfo,
+    user::UserInfo,
 };
 
 #[derive(Deserialize, Clone, Debug)]
@@ -30,7 +32,7 @@ pub enum RedditResponse {
     Comment(CommentData),
 
     #[serde(rename = "t2")]
-    RedditUser(),
+    RedditUser(UserInfo),
 
     #[serde(rename = "t3")]
     Post(PostInfo),

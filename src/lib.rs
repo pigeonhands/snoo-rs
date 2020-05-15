@@ -4,6 +4,7 @@ pub mod subreddit;
 pub mod post;
 pub mod submission;
 pub mod search;
+pub mod user;
 mod models;
 
 

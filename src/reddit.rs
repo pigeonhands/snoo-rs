@@ -11,8 +11,10 @@ use crate::models::{
 
 use crate::{
     submission::Submission,
+    user::RedditUser,
 };
 use crate::search::SearchResults;
+use crate::ChildRedditItem;
 
 use std::io;
 use reqwest::{Client, Url};
@@ -76,6 +78,10 @@ impl Reddit {
     pub async fn search<'r, 's>(&'r self, query: &'s str, sort: SearchSort) -> io::Result<SearchResults<'r, 's>> {
         let res = SearchResults::new_search(self, query, sort).await?;
         Ok(res)
+    }
+
+    pub fn user<'r>(&'r self, username: &str) -> RedditUser<'r> {
+        RedditUser::from_name(self, username)
     }
 
     pub async fn submission_from_link<'a>(&'a self, url: &str) -> io::Result<Submission<'a>>{

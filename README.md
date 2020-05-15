@@ -1,9 +1,15 @@
 # Snoo
 
-
 [![](https://img.shields.io/crates/v/fuzz?style=for-the-badge)](https://crates.io/crates/snoo)
 
-Work in progress reddit client for rust
+Work in progress reddit client for rust. Currently only usefull for crawling.
+
+See  [/examples](https://github.com/pigeonhands/snoo-rs/tree/master/examples) for more.
+
+```Rust
+use snoo::Reddit;
+```
+
 
 ```Rust
 let r = Reddit::new()?;

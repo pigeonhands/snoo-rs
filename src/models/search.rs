@@ -1,15 +1,14 @@
 
 use crate::models::{
     ListingData,
-    PostInfo
 };
 
 use serde::{Deserialize};
 
 #[derive(Deserialize, Debug, Clone)]
-pub struct SearchInfo{
+pub struct SearchInfo<T>{
     #[serde(flatten)]
-    pub results: ListingData<PostInfo>,
+    pub results: ListingData<T>,
     pub after: Option<String>,
     pub before: Option<String>
 }

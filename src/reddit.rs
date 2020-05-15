@@ -12,8 +12,10 @@ use crate::models::{
 use crate::{
     submission::Submission,
     user::RedditUser,
+    endpoints,
 };
-use crate::search::SearchResults;
+use crate::search::{PostSearch, SubredditSearch};
+
 
 use std::io;
 use reqwest::{Client, Url};
@@ -81,8 +83,13 @@ impl Reddit {
         }
     }
 
-    pub async fn search<'r, 's>(&'r self, query: &'s str, sort: SearchSort) -> io::Result<SearchResults<'r, 's>> {
-        let res = SearchResults::new_search(self, query, sort).await?;
+    pub async fn search<'r, 's>(&'r self, query: &'s str, sort: SearchSort) -> io::Result<PostSearch<'r, 's>> {
+        let res : PostSearch = PostSearch::new_search(self, endpoints::SEARCH, query, sort).await?;
+        Ok(res)
+    }
+
+    pub async fn search_subreddits<'r, 's>(&'r self, query: &'s str, sort: SearchSort) -> io::Result<SubredditSearch<'r, 's>> {
+        let res : SubredditSearch = SubredditSearch::new_search(self, endpoints::SUBREDDITS_SEARCH, query, sort).await?;
         Ok(res)
     }
 

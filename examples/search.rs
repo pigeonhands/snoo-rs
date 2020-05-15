@@ -6,19 +6,24 @@ use snoo::SearchSort;
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let r = Reddit::new()?;
 
-    let mut pigeon_posts = r.search("pigeon", SearchSort::New).await?;
+    let pigeon_posts = r.search("pigeon", SearchSort::New).await?;
+    println!("## post search");
+    for p in pigeon_posts.results().iter().take(3) {
+        println!("/r/{}\t\t{}", p.info().subreddit, p.info().title);
+    }
 
-    for i in 1..4 {
-        println!("## Page {}", i);
-        for p in pigeon_posts.results() {
-            println!("{}", p.info().title)
-        }
-        if let Some(posts) = pigeon_posts.next().await? {
-            pigeon_posts = posts;
-        }else{
-            println!("No more search results.");
-            break;
-        }
+    let pigeon_subreddits = r.search_subreddits("pigeon", SearchSort::New).await?;
+    println!("## subreddit search");
+    for p in pigeon_subreddits.results().iter().take(3) {
+        println!("{}", p.url)
+    }
+
+    
+    let subreddit = r.subreddit("pigeon");
+    let hands_in_pigeon_subreddits = subreddit.search("hands",  SearchSort::New).await?;
+    println!("## post in subreddit search");
+    for p in hands_in_pigeon_subreddits.results().iter().take(3) {
+        println!("/r/{}\t\t{}", p.info().subreddit, p.info().title);
     }
 
     Ok(())

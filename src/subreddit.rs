@@ -5,7 +5,9 @@ use crate::models::{
 };
 use crate::ChildRedditItem;
 use crate::post::Post;
-use crate::endpoints;
+use crate::endpoints::{self, SearchSort};
+
+use crate::search::SubredditPostSearch;
 
 use std::io;
 
@@ -29,5 +31,20 @@ impl<'r> Subreddit<'r> {
     pub async fn top(&self) -> io::Result<Vec<Post<'r>>> {
         let ep =  endpoints::SUBREDDIT_TOP.subreddit(&self.name);
         Ok(Post::list_of(self.reddit, &self.reddit.get_list(ep).await?))
+    }
+
+    pub async fn search<'s>(&'r self, query: &'s str, sort: SearchSort) -> io::Result<SubredditPostSearch<'r, 's>> {
+        let res : SubredditPostSearch = SubredditPostSearch::new_search(self.reddit, endpoints::SUBREDDIT_SEARCH.subreddit(&self.name), query, sort).await?;
+        Ok(res)
+    }
+}
+
+//Temp
+impl<'r> ChildRedditItem<'r> for Subreddit<'r> {
+    type DataType = SubredditInfo;
+    type Metadata = SubredditInfo;
+
+    fn from_parent(_: &'r Reddit, info: Self::Metadata) -> SubredditInfo{
+        info
     }
 }

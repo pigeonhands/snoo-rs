@@ -12,7 +12,9 @@ pub use reddit::Reddit;
 pub use endpoints::SearchSort;
 use serde::de::DeserializeOwned;
 
-pub (crate) trait ChildRedditItem<'r> {
+// Represents something that is an abstraction over
+// the raw api result model.
+pub trait ChildRedditItem<'r> {
     type Metadata: Clone+DeserializeOwned;
     type DataType: 'r;
     fn from_parent(parent: &'r Reddit, info: Self::Metadata) -> Self::DataType;
@@ -23,13 +25,5 @@ pub (crate) trait ChildRedditItem<'r> {
             out.push(Self::from_parent(parent, d.to_owned()));
         }
         out
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    #[test]
-    fn it_works() {
-        assert_eq!(2 + 2, 4);
     }
 }

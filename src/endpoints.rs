@@ -74,10 +74,11 @@ impl Endpoint {
     }
 
 
-    pub fn as_search_url(&mut self, q: &str, sort: SearchSort, before: Option<&str>, after: Option<&str>) -> io::Result<Url> {
+    pub fn as_search_url(&self, q: &str, sort: SearchSort, before: Option<&str>, after: Option<&str>) -> io::Result<Url> {
         let mut url = self.as_api_endpoint()?;
         {
             let mut query = url.query_pairs_mut();
+            query.append_pair("restrict_sr", "on");
             query.append_pair("q", q);
             query.append_pair("sort", sort.to_str());
 

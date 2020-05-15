@@ -4,7 +4,7 @@ use serde::Deserialize;
 
 #[derive(Deserialize, Debug, Clone, Default)]
 pub struct PostImage{
-    pub uri: String,
+    pub url: String,
     pub width: Option<i32>,
     pub height: Option<i32>,
 }

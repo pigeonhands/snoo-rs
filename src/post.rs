@@ -1,8 +1,5 @@
 use crate::models::{
-    RedditResponse,
     PostInfo,
-    ListingData,
-    CommentData
 };
 use crate::reddit::Reddit;
 

@@ -10,7 +10,6 @@ use crate::post::Post;
 use crate::ChildRedditItem;
 
 pub struct Submission<'r>{
-    reddit: &'r Reddit,
     op: Post<'r>,
     comments: Vec<Comment<'r>>
 }
@@ -32,7 +31,6 @@ impl<'r> Submission<'r> {
         }
 
         Self{
-            reddit: parent,
             op: Post::from_parent(parent, op),
             comments: comments
         }

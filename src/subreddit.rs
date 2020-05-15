@@ -30,7 +30,7 @@ impl<'r> Subreddit<'r> {
 
     pub async fn top(&self) -> io::Result<Vec<Post<'r>>> {
         let ep = endpoints::SUBREDDIT_TOP.subreddit(&self.name);
-        let posts = self.reddit.get_data::<ListingData<PostInfo>>(ep).await?;
+        let posts = self.reddit.get_data::<ListingData<PostInfo>>(ep.as_api_endpoint()?).await?;
         let post_info = posts.data.inner_children();
         Ok(Post::list_of(self.reddit, &post_info))
     }

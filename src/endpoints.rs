@@ -19,6 +19,27 @@ macro_rules! uri_segments {
     };
 }
 
+#[derive(Copy, Clone)]
+pub enum SearchSort{
+    Relevance,
+    Hot,
+    Top,
+    New,
+    Comments
+}
+
+impl SearchSort {
+    pub fn to_str(&self) -> &'static str {
+        match self {
+            SearchSort::Relevance => "relevance",
+            SearchSort::Hot => "hot",
+            SearchSort::Top => "top",
+            SearchSort::New => "new",
+            SearchSort::Comments =>  "comments"
+        }
+    }
+}
+
 pub struct Endpoint(Cow<'static, str>);
 
 impl Endpoint {
@@ -50,6 +71,25 @@ impl Endpoint {
     pub fn as_api_endpoint(&self) -> io::Result<Url> {
         let api_endpoint = self.as_url()?.join(".json").unwrap();
         Ok(api_endpoint)
+    }
+
+
+    pub fn as_search_url(&mut self, q: &str, sort: SearchSort, before: Option<&str>, after: Option<&str>) -> io::Result<Url> {
+        let mut url = self.as_api_endpoint()?;
+        {
+            let mut query = url.query_pairs_mut();
+            query.append_pair("q", q);
+            query.append_pair("sort", sort.to_str());
+
+            if let Some(afer_thing) = after {
+                query.append_pair("after", afer_thing);
+            }
+
+            if let Some(before_thing) = before {
+                query.append_pair("before", before_thing);
+            }
+        }
+        Ok(url)
     }
 }
 
@@ -203,7 +243,7 @@ endpoints! {
     REPORT =>                  "api/report/",
     RULES =>                   "r/#subreddit/about/rules",
     SAVE =>                    "api/save/",
-    SEARCH =>                  "r/#subreddit/search/",
+    SEARCH =>                  "search",
     SELECT_FLAIR =>            "r/#subreddit/api/selectflair/",
     SENDREPLIES =>             "api/sendreplies",
     SENT =>                    "message/sent/",
@@ -238,6 +278,7 @@ endpoints! {
     SUBREDDITS_NAME_SEARCH =>  "api/search_reddit_names/",
     SUBREDDITS_NEW =>          "subreddits/new/",
     SUBREDDITS_POPULAR =>      "subreddits/popular/",
+    SUBREDDIT_SEARCH =>         "r/#subreddit/search/",
     SUBREDDITS_SEARCH =>       "subreddits/search/",
     SUBSCRIBE =>               "api/subscribe/",
     SUGGESTED_SORT =>          "api/set_suggested_sort/",

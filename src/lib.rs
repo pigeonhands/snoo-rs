@@ -3,11 +3,12 @@ pub mod reddit;
 pub mod subreddit;
 pub mod post;
 pub mod submission;
+pub mod search;
 mod models;
 
 
 pub use reddit::Reddit;
-
+pub use endpoints::SearchSort;
 
 pub (crate) trait ChildRedditItem<'r> {
     type Metadata: Clone;

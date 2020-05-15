@@ -1,5 +1,5 @@
 use tokio;
-use reddit_client::Reddit;
+use snoo::Reddit;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {

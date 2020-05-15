@@ -3,8 +3,9 @@ mod post;
 mod vote;
 mod listing;
 mod comment;
+mod search;
 
-use serde::{Deserialize, de::DeserializeOwned};
+use serde::{Deserialize};
 
 
 pub use crate::models::{
@@ -13,6 +14,7 @@ pub use crate::models::{
     vote::{VoteData},
     listing::ListingData,
     comment::CommentData,
+    search::SearchInfo,
 };
 
 #[derive(Deserialize, Clone, Debug)]

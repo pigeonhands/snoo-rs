@@ -1,6 +1,6 @@
 # Snoo
 
-[![](https://img.shields.io/crates/v/fuzz?style=for-the-badge)](https://crates.io/crates/snoo)
+[![](https://img.shields.io/crates/v/snoo?style=for-the-badge)](https://crates.io/crates/snoo)
 
 Work in progress reddit client for rust. Currently only usefull for crawling.
 

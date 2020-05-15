@@ -1,0 +1,19 @@
+[package]
+name = "snoo"
+version = "0.0.1"
+authors = ["Sam M <sam.mackenzie@live.com>"]
+edition = "2018"
+license="MIT"
+readme="README.md"
+repository="https://github.com/pigeonhands/snoo-rs"
+description="Rust fuzzer/buster."
+keywords = ["reddit"]
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+reqwest = { version = "0.10.4", features = ["json"] }
+tokio = { version="0.2.21", features=["macros"] }
+chrono = { version = "0.4.11", features=["serde"] }

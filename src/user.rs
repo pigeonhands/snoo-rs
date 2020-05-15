@@ -31,8 +31,7 @@ impl<'r> RedditUser<'r>{
     }
     
     pub async fn about(&self) -> io::Result<UserInfo> {
-        let ep = endpoints::USER_ABOUT.user(&self.name).as_api_endpoint()?;
-
+        let ep = endpoints::USER_ABOUT.user(&self.name);
         let about = self.reddit.get_data::<UserInfo>(ep).await?;
         Ok(about.data)
     }

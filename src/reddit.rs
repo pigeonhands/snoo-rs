@@ -52,8 +52,8 @@ impl Reddit {
         Ok(data)
     }
 
-    pub (crate) async fn get_data<T: DeserializeOwned>(&self, target_url: Url) -> io::Result<RedditResponseGeneric<T>> {
-        self.create_request::<RedditResponseGeneric<T>>(target_url).await
+    pub (crate) async fn get_data<T: DeserializeOwned>(&self, ep: Endpoint) -> io::Result<RedditResponseGeneric<T>> {
+        self.create_request::<RedditResponseGeneric<T>>(ep.as_api_endpoint()?).await
     }
 
     async fn create_request_ep<T: DeserializeOwned>(&self, ep: Endpoint) -> io::Result<T> {
@@ -68,7 +68,7 @@ impl Reddit {
     }
 
     pub (crate) async fn get_list<'r, T: DeserializeOwned>(&'r self, ep: Endpoint) -> io::Result<Vec<T>>{
-        let data = self.get_data::<ListingData<T>>(ep.as_api_endpoint()?).await?;
+        let data = self.get_data::<ListingData<T>>(ep).await?;
         let infos = data.data.inner_children();
         Ok(infos)
     }
@@ -91,7 +91,7 @@ impl Reddit {
     }
 
     pub async fn submission_from_link<'a>(&'a self, url: &str) -> io::Result<Submission<'a>>{
-        let page_link = Endpoint::new(url).as_api_endpoint()?;
+        let page_link = Endpoint::new(url);
         let post_data = self.get_data::<ListingData<RedditResponse>>(page_link).await?;
         Ok(Submission::from_resp(self, post_data.data))
     }

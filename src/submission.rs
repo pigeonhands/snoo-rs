@@ -9,11 +9,13 @@ use crate::reddit::Reddit;
 use crate::post::Post;
 use crate::ChildRedditItem;
 
+use crate::user::RedditUser;
+
+/// Post + Comments
 pub struct Submission<'r>{
     op: Post<'r>,
     comments: Vec<Comment<'r>>
 }
-
 
 impl<'r> Submission<'r> {
 
@@ -45,7 +47,7 @@ impl<'r> Submission<'r> {
     }
 }
 
-
+/// A user comment
 pub struct Comment<'r>{
    reddit: &'r Reddit,
    data: CommentData
@@ -61,6 +63,10 @@ impl<'r> Comment<'r>{
 
     pub fn info(&self) -> &CommentData {
         &self.data
+    }
+
+    pub fn author(&self) -> RedditUser{
+        self.reddit.user(&self.data.author)
     }
 }
 

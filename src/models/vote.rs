@@ -28,6 +28,5 @@ pub struct VoteData {
     pub archived: bool,
     pub saved: bool,
     pub locked: bool,
-    pub permalink: String,
     pub gilded: i32,
 }

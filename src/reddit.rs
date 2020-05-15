@@ -47,9 +47,12 @@ impl Reddit {
     }
 
     pub (crate) async fn create_request<T: DeserializeOwned>(&self, target_url: Url) -> io::Result<T> {
-        let data = self.client.get(target_url)
-            .send().await.map_err(|e| io::Error::new(io::ErrorKind::ConnectionAborted, format!("Failed to send get request. {}", e)))?
-            .json::<T>()
+        let resp = self.client.get(target_url)
+            .send().await.map_err(|e| io::Error::new(io::ErrorKind::ConnectionAborted, format!("Failed to send get request. {}", e)))?;
+        if !resp.status().is_success() {
+            Err(io::Error::new(io::ErrorKind::NotFound, format!("A non-success http response was retuned: {}", resp.status())))?;
+        }
+        let data =   resp.json::<T>()
             .await.map_err(|e| io::Error::new(io::ErrorKind::ConnectionAborted, format!("Failed to deseralize response. {}", e)))?;
         Ok(data)
     }
@@ -83,20 +86,27 @@ impl Reddit {
         }
     }
 
+    /// Search over all of reddit
     pub async fn search<'r, 's>(&'r self, query: &'s str, sort: SearchSort) -> io::Result<PostSearch<'r, 's>> {
-        let res : PostSearch = PostSearch::new_search(self, endpoints::SEARCH, query, sort).await?;
+        let search_ep = endpoints::SEARCH;
+        let res : PostSearch = PostSearch::new_search(self, search_ep, query, sort).await?;
         Ok(res)
     }
 
+    /// Search for a subreddit
     pub async fn search_subreddits<'r, 's>(&'r self, query: &'s str, sort: SearchSort) -> io::Result<SubredditSearch<'r, 's>> {
-        let res : SubredditSearch = SubredditSearch::new_search(self, endpoints::SUBREDDITS_SEARCH, query, sort).await?;
+        let search_ep = endpoints::SUBREDDITS_SEARCH;
+        let res : SubredditSearch = SubredditSearch::new_search(self, search_ep, query, sort).await?;
         Ok(res)
     }
 
+    // Get a user by name
     pub fn user<'r>(&'r self, username: &str) -> RedditUser<'r> {
         RedditUser::from_name(self, username)
     }
 
+    /// Get post info
+    /// a "Submission" is a post + comments
     pub async fn submission_from_link<'a>(&'a self, url: &str) -> io::Result<Submission<'a>>{
         let page_link = Endpoint::new(url);
         let post_data = self.get_data::<ListingData<RedditResponse>>(page_link).await?;

@@ -22,6 +22,7 @@ pub struct CommentData {
     #[serde(flatten)]
     pub vote_data: VoteData,
 
+    pub author: String,
     pub body: String,
     pub body_html: String,
     pub parent_id: String,

@@ -39,6 +39,8 @@ pub struct PostInfo {
     #[serde(rename="over_18")]
     pub nsfw: bool,
 
+    pub author: String,
+    pub permalink: Option<String>,
     pub domain: String,
     pub link_flair_css_class: Option<String>,
     pub link_flair_text: Option<String>,

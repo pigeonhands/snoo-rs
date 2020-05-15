@@ -23,5 +23,6 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     for c in spez.comments().await?.iter().take(5) {
         println!("{}", c.info().body);
     }
+
     Ok(())
 }

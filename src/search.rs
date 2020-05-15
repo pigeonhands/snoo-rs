@@ -34,7 +34,7 @@ struct SearchParams<'r, 's>{
 
 pub struct RedditSearch<'r, 's, T: ChildRedditItem<'r>>{
     params: Rc<SearchParams<'r, 's>>,
-    posts: Vec<T::DataType>,
+    results: Vec<T::DataType>,
     before: Option<String>,
     after: Option<String>,
 }
@@ -57,23 +57,25 @@ impl<'r, 's, T: ChildRedditItem<'r>> RedditSearch<'r, 's, T> {
 
         let search = params.reddit.create_request::<RedditResponseGeneric<SearchInfo<T::Metadata>>>(ep).await?.data;
         
-        let posts = {
-            let post_info = search.results.inner_children();
-            T::list_of(params.reddit, &post_info)
+        let results = {
+            let result_info = search.results.inner_children();
+            T::list_of(params.reddit, &result_info)
         };
 
         Ok(RedditSearch::<'r, 's>{
             params: params,
-            posts: posts,
+            results: results,
             before: search.before,
             after: search.after
         })
     }
 
+    /// Current search results
     pub fn results(&self) -> &Vec<T::DataType> {
-        &self.posts
+        &self.results
     }
 
+    /// Next page of results
     pub async fn next(&self) -> io::Result<Option<RedditSearch<'r, 's, T>>> {
         
         Ok(if let Some(next) = &self.after {
@@ -83,6 +85,7 @@ impl<'r, 's, T: ChildRedditItem<'r>> RedditSearch<'r, 's, T> {
         })
     }
 
+    /// Previous page of results
     pub async fn prev(&self) -> Option<io::Result<RedditSearch<'r, 's, T>>> {
         if let Some(prev) = &self.before {
             Some(Self::search(self.params.clone(), Some(prev), None).await)

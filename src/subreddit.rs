@@ -34,7 +34,8 @@ impl<'r> Subreddit<'r> {
     }
 
     pub async fn search<'s>(&'r self, query: &'s str, sort: SearchSort) -> io::Result<SubredditPostSearch<'r, 's>> {
-        let res : SubredditPostSearch = SubredditPostSearch::new_search(self.reddit, endpoints::SUBREDDIT_SEARCH.subreddit(&self.name), query, sort).await?;
+        let search_ep = endpoints::SUBREDDIT_SEARCH.subreddit(&self.name);
+        let res : SubredditPostSearch = SubredditPostSearch::new_search(self.reddit, search_ep, query, sort).await?;
         Ok(res)
     }
 }

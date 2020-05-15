@@ -1,5 +1,4 @@
-
-use serde::{Deserialize};
+use serde::Deserialize;
 
 #[derive(Deserialize, Debug, Clone)]
 pub struct SubredditInfo {
@@ -18,4 +17,3 @@ pub struct SubredditInfo {
     pub mod_permissions: Option<i32>,
     pub user_is_banned: Option<bool>,
 }
-

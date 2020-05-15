@@ -1,15 +1,13 @@
-use crate::models::{
-    PostInfo,
-};
+use crate::models::PostInfo;
 use crate::reddit::Reddit;
-use crate::subreddit::SubredditLink;
-use crate::ChildRedditItem;
-use crate::user::RedditUserLink;
 use crate::submission::Submission;
+use crate::subreddit::SubredditLink;
+use crate::user::RedditUserLink;
+use crate::ChildRedditItem;
 
 use std::io;
 
-pub struct Post<'r>{
+pub struct Post<'r> {
     reddit: &'r Reddit,
     info: PostInfo,
 }
@@ -18,8 +16,8 @@ impl<'r> ChildRedditItem<'r> for Post<'r> {
     type DataType = Post<'r>;
     type Metadata = PostInfo;
 
-    fn from_parent(parent: &'r Reddit, info: Self::Metadata) -> Self{
-        Self{
+    fn from_parent(parent: &'r Reddit, info: Self::Metadata) -> Self {
+        Self {
             reddit: parent,
             info: info,
         }
@@ -39,7 +37,7 @@ impl<'r> Post<'r> {
         self.reddit.subreddit(&self.info.subreddit)
     }
 
-    pub fn author(&self) -> RedditUserLink<'r>{
+    pub fn author(&self) -> RedditUserLink<'r> {
         RedditUserLink::new(self.reddit, &self.info.author)
     }
 

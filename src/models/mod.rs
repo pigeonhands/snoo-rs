@@ -1,32 +1,31 @@
-mod subreddit;
-mod post;
-mod metadata;
-mod listing;
 mod comment;
+mod listing;
+mod metadata;
+mod post;
 mod search;
+mod subreddit;
 mod user;
 
-use serde::{Deserialize};
-
+use serde::Deserialize;
 
 pub use crate::models::{
-    subreddit::SubredditInfo,
-    post::{PostInfo, PostPreview, PostImage, PostImages},
-    metadata::{VoteData, ModerateData},
-    listing::ListingData,
     comment::CommentData,
+    listing::ListingData,
+    metadata::{ModerateData, VoteData},
+    post::{PostImage, PostImages, PostInfo, PostPreview},
     search::SearchInfo,
+    subreddit::SubredditInfo,
     user::UserInfo,
 };
 
 #[derive(Deserialize, Clone, Debug)]
-pub struct RedditResponseGeneric<T>{
+pub struct RedditResponseGeneric<T> {
     pub kind: String,
     pub data: T,
 }
 
 #[derive(Deserialize, Clone, Debug)]
-#[serde(tag = "kind", content="data")]
+#[serde(tag = "kind", content = "data")]
 pub enum RedditResponse {
     #[serde(rename = "t1")]
     Comment(CommentData),

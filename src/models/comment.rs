@@ -1,18 +1,14 @@
-use crate::models::{
-    VoteData,
-    ModerateData,
-    RedditResponse
-};
-use serde::{Deserialize};
+use crate::models::{ModerateData, RedditResponse, VoteData};
+use serde::Deserialize;
 
 #[derive(Deserialize, Debug, Clone)]
 #[serde(untagged)]
-pub enum CommentReplies{
+pub enum CommentReplies {
     NoReply(String),
-    HasReplies(Vec<RedditResponse>)
+    HasReplies(Vec<RedditResponse>),
 }
 
-impl Default for CommentReplies{
+impl Default for CommentReplies {
     fn default() -> Self {
         CommentReplies::NoReply(String::new())
     }
@@ -25,7 +21,7 @@ pub struct CommentData {
 
     #[serde(flatten)]
     pub moderate_data: ModerateData,
-    
+
     pub author: String,
     pub body: String,
     pub body_html: String,

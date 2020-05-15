@@ -1,13 +1,13 @@
-use serde::{Deserialize};
+use serde::Deserialize;
 
 use crate::models::SubredditInfo;
 
 #[derive(Deserialize, Debug, Clone)]
 pub struct UserInfo {
-    #[serde(rename="is_gold")]
+    #[serde(rename = "is_gold")]
     pub has_gold: bool,
 
-    #[serde(rename="verified")]
+    #[serde(rename = "verified")]
     pub is_verified: bool,
 
     pub name: String,
@@ -23,5 +23,3 @@ pub struct UserInfo {
     pub icon_img: Option<String>,
     pub subreddit: Option<SubredditInfo>,
 }
-
-

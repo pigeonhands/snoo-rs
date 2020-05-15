@@ -1,16 +1,16 @@
-use crate::models::{VoteData, ModerateData};
+use crate::models::{ModerateData, VoteData};
 
 use serde::Deserialize;
 
 #[derive(Deserialize, Debug, Clone, Default)]
-pub struct PostImage{
+pub struct PostImage {
     pub url: String,
     pub width: Option<i32>,
     pub height: Option<i32>,
 }
 
 #[derive(Deserialize, Debug, Clone, Default)]
-pub struct PostImages{
+pub struct PostImages {
     pub source: PostImage,
     pub resolutions: Vec<PostImage>,
     pub id: String,
@@ -30,16 +30,16 @@ pub struct PostInfo {
     #[serde(flatten)]
     pub moderate_data: ModerateData,
 
-    #[serde(rename="spoiler")]
+    #[serde(rename = "spoiler")]
     pub is_spoiler: bool,
 
-    #[serde(rename="hidden")]
+    #[serde(rename = "hidden")]
     pub is_hidden: bool,
 
-    #[serde(rename="is_self")]
+    #[serde(rename = "is_self")]
     pub is_self_posted: bool,
 
-    #[serde(rename="over_18")]
+    #[serde(rename = "over_18")]
     pub nsfw: bool,
 
     pub author: String,

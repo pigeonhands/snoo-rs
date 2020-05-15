@@ -1,5 +1,5 @@
+use reqwest::Url;
 use std::borrow::Cow;
-use reqwest::{Url};
 
 use std::io;
 
@@ -20,12 +20,12 @@ macro_rules! uri_segments {
 }
 
 #[derive(Copy, Clone)]
-pub enum SearchSort{
+pub enum SearchSort {
     Relevance,
     Hot,
     Top,
     New,
-    Comments
+    Comments,
 }
 
 impl SearchSort {
@@ -35,7 +35,7 @@ impl SearchSort {
             SearchSort::Hot => "hot",
             SearchSort::Top => "top",
             SearchSort::New => "new",
-            SearchSort::Comments =>  "comments"
+            SearchSort::Comments => "comments",
         }
     }
 }
@@ -43,7 +43,7 @@ impl SearchSort {
 pub struct Endpoint(Cow<'static, str>);
 
 impl Endpoint {
-    const REDDIT_URL : &'static str = "https://reddit.com";
+    const REDDIT_URL: &'static str = "https://reddit.com";
 
     pub fn new(ep: &str) -> Endpoint {
         Endpoint(Cow::Owned(ep.to_owned()))
@@ -56,14 +56,20 @@ impl Endpoint {
         user
     }
 
-    fn replace(&self, needle: &str, haystack: &str) -> Endpoint{
+    fn replace(&self, needle: &str, haystack: &str) -> Endpoint {
         Endpoint(self.0.as_ref().replace(needle, haystack).into())
     }
 
     pub fn as_url(&self) -> io::Result<Url> {
-        let url = Url::parse(Endpoint::REDDIT_URL).unwrap()
+        let url = Url::parse(Endpoint::REDDIT_URL)
+            .unwrap()
             .join(&self.0)
-            .map_err(|_| io::Error::new(io::ErrorKind::InvalidInput, format!("Invalid for url: {}", &self.0)))?;
+            .map_err(|_| {
+                io::Error::new(
+                    io::ErrorKind::InvalidInput,
+                    format!("Invalid for url: {}", &self.0),
+                )
+            })?;
 
         Ok(url)
     }
@@ -73,8 +79,13 @@ impl Endpoint {
         Ok(api_endpoint)
     }
 
-
-    pub fn as_search_url(&self, q: &str, sort: SearchSort, before: Option<&str>, after: Option<&str>) -> io::Result<Url> {
+    pub fn as_search_url(
+        &self,
+        q: &str,
+        sort: SearchSort,
+        before: Option<&str>,
+        after: Option<&str>,
+    ) -> io::Result<Url> {
         let mut url = self.as_api_endpoint()?;
         {
             let mut query = url.query_pairs_mut();

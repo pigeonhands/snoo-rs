@@ -1,20 +1,13 @@
-use crate::reddit::Reddit;
-use crate::models::{
-    SubredditInfo,
-};
-use crate::ChildRedditItem;
-use crate::post::Post;
 use crate::endpoints::{self, SearchSort};
+use crate::models::SubredditInfo;
+use crate::post::Post;
+use crate::reddit::Reddit;
+use crate::ChildRedditItem;
 
 use crate::search::PostSearch;
 use reqwest::Url;
 
-use chrono::{
-    DateTime,
-    Utc,
-    prelude::*,
-};
-
+use chrono::{prelude::*, DateTime, Utc};
 
 use std::io;
 
@@ -24,10 +17,10 @@ pub struct SubredditLink<'r> {
 }
 
 impl<'r> SubredditLink<'r> {
-    pub fn new(reddit: &'r Reddit, subreddit: &str) -> SubredditLink<'r>{
-        SubredditLink{
+    pub fn new(reddit: &'r Reddit, subreddit: &str) -> SubredditLink<'r> {
+        SubredditLink {
             reddit: reddit,
-            subreddit: subreddit.to_owned()
+            subreddit: subreddit.to_owned(),
         }
     }
 
@@ -37,24 +30,27 @@ impl<'r> SubredditLink<'r> {
 
         Ok(Subreddit {
             link: self,
-            info: info.data
+            info: info.data,
         })
     }
 
-    pub fn name(&self) -> &str{
+    pub fn name(&self) -> &str {
         &self.subreddit
     }
 
     pub async fn top(&self) -> io::Result<Vec<Post<'r>>> {
-        let ep =  endpoints::SUBREDDIT_TOP.subreddit(&self.subreddit);
+        let ep = endpoints::SUBREDDIT_TOP.subreddit(&self.subreddit);
         Ok(Post::list_of(self.reddit, &self.reddit.get_list(ep).await?))
     }
 
-    pub async fn search<'s>(&'r self, query: &'s str, sort: SearchSort) -> io::Result<PostSearch<'r, 's>> {
+    pub async fn search<'s>(
+        &'r self,
+        query: &'s str,
+        sort: SearchSort,
+    ) -> io::Result<PostSearch<'r, 's>> {
         let search_ep = endpoints::SUBREDDIT_SEARCH.subreddit(&self.subreddit);
         PostSearch::new_search(self.reddit, search_ep, query, sort).await
     }
-
 }
 
 pub struct Subreddit<'r> {
@@ -67,7 +63,7 @@ impl<'r> Subreddit<'r> {
         &self.info
     }
 
-    pub fn name(&self) -> &str{
+    pub fn name(&self) -> &str {
         self.link.name()
     }
 
@@ -80,10 +76,14 @@ impl<'r> Subreddit<'r> {
     }
 
     pub async fn top(&self) -> io::Result<Vec<Post<'r>>> {
-       self.link.top().await
+        self.link.top().await
     }
 
-    pub async fn search<'s>(&'r self, query: &'s str, sort: SearchSort) -> io::Result<PostSearch<'r, 's>> {
+    pub async fn search<'s>(
+        &'r self,
+        query: &'s str,
+        sort: SearchSort,
+    ) -> io::Result<PostSearch<'r, 's>> {
         self.link.search(query, sort).await
     }
 
@@ -92,11 +92,11 @@ impl<'r> Subreddit<'r> {
             .map_err(|_| io::Error::new(io::ErrorKind::InvalidData, "Failed to parse url"))
     }
 
-    pub fn created(&self) -> Option<DateTime<Utc>>{
-        if let Some(created) = self.info.created{
+    pub fn created(&self) -> Option<DateTime<Utc>> {
+        if let Some(created) = self.info.created {
             let naive_datetime = NaiveDateTime::from_timestamp(created as i64, 0);
             Some(DateTime::from_utc(naive_datetime, Utc))
-        }else{
+        } else {
             None
         }
     }
@@ -109,8 +109,8 @@ impl<'r> ChildRedditItem<'r> for Subreddit<'r> {
 
     fn from_parent(reddit: &'r Reddit, info: Self::Metadata) -> Subreddit<'r> {
         Subreddit {
-            link:SubredditLink::new(reddit, &info.display_name),
-            info:info
+            link: SubredditLink::new(reddit, &info.display_name),
+            info: info,
         }
     }
 }

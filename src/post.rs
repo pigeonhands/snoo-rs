@@ -1,11 +1,10 @@
 use crate::models::{
     PostInfo,
 };
-use crate::endpoints::Endpoint;
 use crate::reddit::Reddit;
-use crate::subreddit::Subreddit;
+use crate::subreddit::SubredditLink;
 use crate::ChildRedditItem;
-use crate::user::RedditUser;
+use crate::user::RedditUserLink;
 use crate::submission::Submission;
 
 use std::io;
@@ -32,16 +31,20 @@ impl<'r> Post<'r> {
         &self.info
     }
 
-    pub fn subreddit(&self) -> Subreddit {
+    pub fn url(&self) -> &str {
+        self.info.url.as_ref()
+    }
+
+
+    pub fn subreddit(&self) -> SubredditLink<'r> {
         self.reddit.subreddit(&self.info.subreddit)
     }
 
-    pub fn author(&self) -> RedditUser{
-        self.reddit.user(&self.info.author)
+    pub fn author(&self) -> RedditUserLink<'r>{
+        RedditUserLink::new(self.reddit, &self.info.author)
     }
 
     pub async fn submission(&self) -> io::Result<Submission<'r>> {
-        let submission = self.reddit.submission_from_link(&self.info.url).await?;
-        Ok(submission)
+        self.reddit.submission_from_link(&self.url()).await
     }
 }

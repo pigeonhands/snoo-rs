@@ -1,4 +1,4 @@
-use crate::models::VoteData;
+use crate::models::{VoteData, ModerateData};
 
 use serde::Deserialize;
 
@@ -26,6 +26,9 @@ pub struct PostPreview {
 pub struct PostInfo {
     #[serde(flatten)]
     pub vote_data: VoteData,
+
+    #[serde(flatten)]
+    pub moderate_data: ModerateData,
 
     #[serde(rename="spoiler")]
     pub is_spoiler: bool,

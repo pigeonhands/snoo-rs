@@ -23,7 +23,7 @@ use std::rc::Rc;
 
 pub type PostSearch<'r, 's>           =  RedditSearch::<'r, 's, Post<'r>>;
 pub type SubredditSearch<'r, 's>      =  RedditSearch::<'r, 's, Subreddit<'r>>;
-pub type SubredditPostSearch<'r, 's>  =  RedditSearch::<'r, 's, Post<'r>>;
+pub type UserSearch<'r, 's>           =  RedditSearch::<'r, 's, Subreddit<'r>>;
 
 struct SearchParams<'r, 's>{
     reddit: &'r Reddit,

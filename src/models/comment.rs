@@ -1,5 +1,6 @@
 use crate::models::{
     VoteData,
+    ModerateData,
     RedditResponse
 };
 use serde::{Deserialize};
@@ -22,6 +23,9 @@ pub struct CommentData {
     #[serde(flatten)]
     pub vote_data: VoteData,
 
+    #[serde(flatten)]
+    pub moderate_data: ModerateData,
+    
     pub author: String,
     pub body: String,
     pub body_html: String,

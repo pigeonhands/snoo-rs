@@ -1,6 +1,6 @@
 mod subreddit;
 mod post;
-mod vote;
+mod metadata;
 mod listing;
 mod comment;
 mod search;
@@ -12,7 +12,7 @@ use serde::{Deserialize};
 pub use crate::models::{
     subreddit::SubredditInfo,
     post::{PostInfo, PostPreview, PostImage, PostImages},
-    vote::{VoteData},
+    metadata::{VoteData, ModerateData},
     listing::ListingData,
     comment::CommentData,
     search::SearchInfo,

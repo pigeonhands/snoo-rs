@@ -10,6 +10,7 @@ pub struct UserInfo {
     #[serde(rename="verified")]
     pub is_verified: bool,
 
+    pub name: String,
     pub has_subscribed: bool,
     pub has_verified_email: Option<bool>,
     pub is_employee: bool,

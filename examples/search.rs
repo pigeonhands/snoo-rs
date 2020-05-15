@@ -15,7 +15,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let pigeon_subreddits = r.search_subreddits("pigeon", SearchSort::New).await?;
     println!("## subreddit search");
     for p in pigeon_subreddits.results().iter().take(3) {
-        println!("{}", p.url)
+        println!("{}", p.info().url)
     }
 
     
@@ -23,7 +23,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let hands_in_pigeon_subreddits = subreddit.search("hands",  SearchSort::New).await?;
     println!("## post in subreddit search");
     for p in hands_in_pigeon_subreddits.results().iter().take(3) {
-        println!("/r/{}\t\t{}", p.info().subreddit, p.info().title);
+        println!("/r/{}\t\t{}", p.name(), p.info().title);
     }
 
     Ok(())

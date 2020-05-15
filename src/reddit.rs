@@ -1,4 +1,4 @@
-use crate::subreddit::Subreddit;
+
 use crate::endpoints::{
     SearchSort,
     Endpoint
@@ -11,7 +11,8 @@ use crate::models::{
 
 use crate::{
     submission::Submission,
-    user::RedditUser,
+    user::RedditUserLink,
+    subreddit::SubredditLink,
     endpoints,
 };
 use crate::search::{PostSearch, SubredditSearch};
@@ -61,49 +62,35 @@ impl Reddit {
         self.create_request::<RedditResponseGeneric<T>>(ep.as_api_endpoint()?).await
     }
 
-    async fn create_request_ep<T: DeserializeOwned>(&self, ep: Endpoint) -> io::Result<T> {
-        let target_url = ep.as_api_endpoint()?;
-        let data = self.create_request(target_url).await?;
-        Ok(data)
-    }
-
-  
-    pub (crate) async fn get_any(&self, ep: Endpoint) -> io::Result<RedditResponse> {
-        self.create_request_ep::<RedditResponse>(ep).await
-    }
-
     pub (crate) async fn get_list<'r, T: DeserializeOwned>(&'r self, ep: Endpoint) -> io::Result<Vec<T>>{
         let data = self.get_data::<ListingData<T>>(ep).await?;
         let infos = data.data.inner_children();
         Ok(infos)
     }
 
+    // Get a user by name
+    pub fn user<'r>(&'r self, username: &str) -> RedditUserLink<'r> {
+        RedditUserLink::new(self, username)
+    }
 
-    pub fn subreddit(&self, name: &str) -> Subreddit {
-        Subreddit{
-            reddit: self,
-            name: name.to_owned()
-        }
+    //get a subreddit by name
+    pub fn subreddit<'r>(&'r self, name: &str) -> SubredditLink<'r> {
+        SubredditLink::new(self, name)
     }
 
     /// Search over all of reddit
     pub async fn search<'r, 's>(&'r self, query: &'s str, sort: SearchSort) -> io::Result<PostSearch<'r, 's>> {
         let search_ep = endpoints::SEARCH;
-        let res : PostSearch = PostSearch::new_search(self, search_ep, query, sort).await?;
-        Ok(res)
+        PostSearch::new_search(self, search_ep, query, sort).await
     }
 
     /// Search for a subreddit
     pub async fn search_subreddits<'r, 's>(&'r self, query: &'s str, sort: SearchSort) -> io::Result<SubredditSearch<'r, 's>> {
         let search_ep = endpoints::SUBREDDITS_SEARCH;
-        let res : SubredditSearch = SubredditSearch::new_search(self, search_ep, query, sort).await?;
-        Ok(res)
+        SubredditSearch::new_search(self, search_ep, query, sort).await
     }
 
-    // Get a user by name
-    pub fn user<'r>(&'r self, username: &str) -> RedditUser<'r> {
-        RedditUser::from_name(self, username)
-    }
+   
 
     /// Get post info
     /// a "Submission" is a post + comments

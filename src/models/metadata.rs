@@ -14,19 +14,24 @@ impl Default for VoteEdited{
 
 #[derive(Deserialize, Debug, Clone, Default)]
 pub struct VoteData {
+    #[serde(rename="likes")]
+    pub liked: Option<bool>, 
+    pub downs: i32,
+    pub ups: i32,
+    pub gilded: i32,
+}
+
+
+#[derive(Deserialize, Debug, Clone, Default)]
+pub struct ModerateData {
+    
     #[serde(rename="stickied")]
     pub is_stickied: bool,
 
-    #[serde(rename="likes")]
-    pub liked: Option<bool>, 
-
     pub author_flair_css_class: Option<String>,
     pub author_flair_text: Option<String>,
-    pub downs: i32,
-    pub ups: i32,
     pub edited: VoteEdited,
     pub archived: bool,
     pub saved: bool,
     pub locked: bool,
-    pub gilded: i32,
 }

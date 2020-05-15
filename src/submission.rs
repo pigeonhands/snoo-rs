@@ -9,7 +9,7 @@ use crate::reddit::Reddit;
 use crate::post::Post;
 use crate::ChildRedditItem;
 
-use crate::user::RedditUser;
+use crate::user::RedditUserLink;
 
 /// Post + Comments
 pub struct Submission<'r>{
@@ -27,7 +27,7 @@ impl<'r> Submission<'r> {
         for l in listing.children {
             match l.data {
                 RedditResponse::Post(post) => op = post,
-                RedditResponse::Comment(c) => comments.push(Comment::from_data(parent, c)),
+                RedditResponse::Comment(c) => comments.push(Comment::from_parent(parent, c)),
                 _ =>{}
             }
         }
@@ -54,20 +54,14 @@ pub struct Comment<'r>{
 }
 
 impl<'r> Comment<'r>{
-    fn from_data(parent:&'r Reddit, data: CommentData) -> Self{
-        Self{
-            reddit: parent,
-            data:data,
-        }
-    }
-
     pub fn info(&self) -> &CommentData {
         &self.data
     }
 
-    pub fn author(&self) -> RedditUser{
+    pub fn author(&self) -> RedditUserLink{
         self.reddit.user(&self.data.author)
     }
+
 }
 
 

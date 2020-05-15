@@ -5,8 +5,8 @@ use snoo::Reddit;
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let r = Reddit::new()?;
 
-    let spez = r.user("spez");
-    let about = spez.about().await?;
+    let spez = r.user("spez").get().await?;
+    let about = spez.info();
     println!("{}", spez.name());
     println!("Is emplyee: {}", about.is_employee);
     println!("Has gold: {}", about.has_gold);

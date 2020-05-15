@@ -5,8 +5,8 @@ use snoo::Reddit;
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let r = Reddit::new()?;
 
-    let rust_subreddit = r.subreddit("rust");
-    let info = rust_subreddit.info().await?;
+    let rust_subreddit = r.subreddit("rust").get().await?;
+    let info = rust_subreddit.info();
 
     println!("{}", info.title);
     println!("Subs: {:?}", info.subscribers);

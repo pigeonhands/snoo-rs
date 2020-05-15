@@ -4,12 +4,8 @@ use crate::models::SubredditInfo;
 
 #[derive(Deserialize, Debug, Clone)]
 pub struct UserInfo {
-    #[serde(rename = "is_gold")]
-    pub has_gold: bool,
-
-    #[serde(rename = "verified")]
-    pub is_verified: bool,
-
+    pub is_gold: bool,
+    pub verified: bool,
     pub name: String,
     pub has_subscribed: bool,
     pub has_verified_email: Option<bool>,

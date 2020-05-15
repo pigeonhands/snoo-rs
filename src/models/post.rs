@@ -43,6 +43,7 @@ pub struct PostInfo {
     pub nsfw: bool,
 
     pub author: String,
+    pub name: String,
     pub permalink: Option<String>,
     pub domain: String,
     pub link_flair_css_class: Option<String>,

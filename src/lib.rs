@@ -6,6 +6,7 @@ pub mod search;
 pub mod submission;
 pub mod subreddit;
 pub mod user;
+mod feed;
 
 pub use endpoints::SearchSort;
 pub use reddit::Reddit;

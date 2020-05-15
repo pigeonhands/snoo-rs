@@ -6,11 +6,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let r = Reddit::new()?;
 
     let spez = r.user("spez").get().await?;
-    let about = spez.info();
     println!("{}", spez.name());
-    println!("Is emplyee: {}", about.is_employee);
-    println!("Has gold: {}", about.has_gold);
-    println!("Verified: {}", about.is_verified);
+    println!("Is emplyee: {}", spez.is_employee());
+    println!("Has gold: {}", spez.has_gold());
+    println!("Verified: {}", spez.is_verified());
 
     println!("\n## Submitted");
 

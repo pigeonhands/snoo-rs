@@ -59,6 +59,22 @@ impl<'r> RedditUser<'r> {
         &self.info
     }
 
+    pub fn is_moderator(&self) -> bool {
+        self.info.is_mod
+    }
+
+    pub fn is_verified(&self) -> bool {
+        self.info.verified
+    }
+
+    pub fn is_employee(&self) -> bool {
+        self.info.is_employee
+    }
+
+    pub fn has_gold(&self) -> bool {
+        self.info.is_gold
+    }
+
     pub async fn submitted(&self) -> io::Result<Vec<Post<'r>>> {
         self.link.submitted().await
     }

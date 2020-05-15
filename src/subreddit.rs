@@ -5,6 +5,7 @@ use crate::reddit::Reddit;
 use crate::ChildRedditItem;
 
 use crate::search::PostSearch;
+use crate::feed::PostFeed;
 use reqwest::Url;
 
 use chrono::{prelude::*, DateTime, Utc};
@@ -38,6 +39,10 @@ impl<'r> SubredditLink<'r> {
         &self.subreddit
     }
 
+    pub fn feed(&self) -> PostFeed {
+        PostFeed::new(self.reddit.clone(), endpoints::SUBREDDIT_NEW)
+    }
+    
     pub async fn top(&self) -> io::Result<Vec<Post<'r>>> {
         let ep = endpoints::SUBREDDIT_TOP.subreddit(&self.subreddit);
         Ok(Post::list_of(self.reddit, &self.reddit.get_list(ep).await?))
@@ -102,7 +107,6 @@ impl<'r> Subreddit<'r> {
     }
 }
 
-//Temp
 impl<'r> ChildRedditItem<'r> for Subreddit<'r> {
     type DataType = Subreddit<'r>;
     type Metadata = SubredditInfo;

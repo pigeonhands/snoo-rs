@@ -1,6 +1,6 @@
 use crate::reddit::Reddit;
 
-use crate::models::{RedditResponseGeneric, SearchInfo};
+use crate::models::{RedditResponseGeneric, SearchInfo, PostInfo};
 use crate::ChildRedditItem;
 use crate::{post::Post, subreddit::Subreddit};
 
@@ -10,6 +10,7 @@ use crate::endpoints::Endpoint;
 
 use std::io;
 use std::rc::Rc;
+
 
 pub type PostSearch<'r, 's> = RedditSearch<'r, 's, Post<'r>>;
 pub type SubredditSearch<'r, 's> = RedditSearch<'r, 's, Subreddit<'r>>;
@@ -53,7 +54,7 @@ impl<'r, 's, T: ChildRedditItem<'r>> RedditSearch<'r, 's, T> {
     ) -> io::Result<RedditSearch<'r, 's, T>> {
         let ep = params
             .endpoint
-            .as_search_url(params.query, params.sort, before, after)?;
+            .as_filter_url(Some(params.query), params.sort, before, after)?;
 
         let search = params
             .reddit

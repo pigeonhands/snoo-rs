@@ -79,26 +79,28 @@ impl Endpoint {
         Ok(api_endpoint)
     }
 
-    pub fn as_search_url(
+    pub fn as_filter_url<T: AsRef<str>>(
         &self,
-        q: &str,
+        q: Option<&str>,
         sort: SearchSort,
-        before: Option<&str>,
-        after: Option<&str>,
+        before: Option<T>,
+        after: Option<T>,
     ) -> io::Result<Url> {
         let mut url = self.as_api_endpoint()?;
         {
             let mut query = url.query_pairs_mut();
             query.append_pair("restrict_sr", "on");
-            query.append_pair("q", q);
+            if let Some(search_string) = q{
+                query.append_pair("q", search_string);
+            }
             query.append_pair("sort", sort.to_str());
 
             if let Some(afer_thing) = after {
-                query.append_pair("after", afer_thing);
+                query.append_pair("after", afer_thing.as_ref());
             }
 
             if let Some(before_thing) = before {
-                query.append_pair("before", before_thing);
+                query.append_pair("before", &before_thing.as_ref());
             }
         }
         Ok(url)

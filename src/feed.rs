@@ -51,6 +51,7 @@ where
 
             //Yikes
             self.reddit
+                .app
                 .create_request::<RedditResponseGeneric<SearchInfo<T>>>(initial_ep)
                 .await?
                 .data
@@ -76,6 +77,7 @@ where
 
             let search = self
                 .reddit
+                .app
                 .create_request::<RedditResponseGeneric<SearchInfo<T>>>(ep)
                 .await
                 .unwrap()

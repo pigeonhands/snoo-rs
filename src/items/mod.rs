@@ -1,10 +1,8 @@
-
 pub mod post;
 pub mod search;
 pub mod submission;
 pub mod subreddit;
 pub mod user;
-
 
 pub use crate::endpoints::SearchSort;
 pub use crate::reddit::Reddit;

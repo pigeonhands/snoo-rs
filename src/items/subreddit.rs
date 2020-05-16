@@ -1,14 +1,9 @@
 use crate::endpoints::{self, SearchSort};
+use crate::feed::ContentStream;
 use crate::models::{PostInfo, SubredditInfo};
 use crate::reddit::Reddit;
-use crate::feed::ContentStream;
 
-use crate::items::{
-    AbstractedApi,
-    search::PostSearch,
-    post::Post,
-};
-
+use crate::items::{post::Post, search::PostSearch, AbstractedApi};
 
 use reqwest::Url;
 
@@ -43,9 +38,9 @@ impl<'r> SubredditLink<'r> {
         &self.subreddit
     }
 
+    /// Stream of new posts in the subreddit.
     pub fn feed(&self) -> ContentStream<PostInfo> {
         let ep = endpoints::SUBREDDIT_NEW.subreddit(self.name());
-        println!("EP: {}", &ep.as_url().unwrap());
         ContentStream::new(self.reddit.clone(), ep)
     }
 

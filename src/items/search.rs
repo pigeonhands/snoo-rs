@@ -1,12 +1,7 @@
 use crate::reddit::Reddit;
 
+use crate::items::{post::Post, subreddit::Subreddit, user::RedditUser, AbstractedApi};
 use crate::models::{RedditResponseGeneric, SearchInfo};
-use crate::items::{
-    AbstractedApi,
-    post::Post,
-    subreddit::Subreddit,
-    user::RedditUser,
-};
 
 use crate::endpoints::SearchSort;
 
@@ -61,6 +56,7 @@ impl<'r, 's, T: AbstractedApi<'r>> RedditSearch<'r, 's, T> {
 
         let search = params
             .reddit
+            .app
             .create_request::<RedditResponseGeneric<SearchInfo<T::ApiType>>>(ep)
             .await?
             .data;

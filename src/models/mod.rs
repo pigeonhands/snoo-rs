@@ -1,3 +1,4 @@
+pub mod auth;
 mod comment;
 mod listing;
 mod metadata;

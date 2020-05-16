@@ -2,70 +2,63 @@ use crate::endpoints::{self, Endpoint, SearchSort};
 use crate::models::{ListingData, RedditResponse, RedditResponseGeneric};
 
 use crate::items::{
-    AbstractedApi,
     search::{PostSearch, SubredditSearch, UserSearch},
-    submission::Submission,subreddit::SubredditLink,
-    user::RedditUserLink
+    submission::Submission,
+    subreddit::SubredditLink,
+    user::RedditUserLink,
+    AbstractedApi,
 };
 
+use crate::rate_limit::RateLimiter;
+use crate::reddit_app::RedditApp;
 
-use reqwest::{Client, Url};
 use serde::de::DeserializeOwned;
 use std::io;
-
-static USER_AGENT: &str = concat!(env!("CARGO_PKG_NAME"), "/", env!("CARGO_PKG_VERSION"),);
 
 /// Reddit client instance
 #[derive(Clone)]
 pub struct Reddit {
-    client: Client,
+    pub(crate) app: RedditApp,
 }
 
 impl Reddit {
     pub fn new() -> io::Result<Reddit> {
-        let client = reqwest::Client::builder()
-            .user_agent(USER_AGENT)
-            .build()
-            .map_err(|e| {
-                io::Error::new(
-                    io::ErrorKind::Interrupted,
-                    format!("Failed to create http client. {:?}", e),
-                )
-            })?;
-
-        Ok(Reddit { client: client })
+        Ok(Reddit {
+            app: RedditApp::new()?,
+        })
     }
 
-    pub(crate) async fn create_request<T: DeserializeOwned>(
-        &self,
-        target_url: Url,
-    ) -> io::Result<T> {
-        let resp = self.client.get(target_url).send().await.map_err(|e| {
-            io::Error::new(
-                io::ErrorKind::ConnectionAborted,
-                format!("Failed to send get request. {}", e),
-            )
-        })?;
-        if !resp.status().is_success() {
-            Err(io::Error::new(
-                io::ErrorKind::NotFound,
-                format!("A non-success http response was retuned: {}", resp.status()),
-            ))?;
-        }
-        let data = resp.json::<T>().await.map_err(|e| {
-            io::Error::new(
-                io::ErrorKind::ConnectionAborted,
-                format!("Failed to deseralize response. {}", e),
-            )
-        })?;
-        Ok(data)
+    pub fn from_app(app: RedditApp) -> io::Result<Reddit> {
+        Ok(Reddit { app: app })
+    }
+
+    /// No rate limiting.
+    pub fn rate_limit_off(mut self) -> Self {
+        self.app.rate_limiter = RateLimiter::Off;
+        self
+    }
+
+    /// Make requests as quick as possable until limit is
+    /// reached, then wait for reset.
+    pub fn rate_limit_bacthed(mut self) -> Self {
+        self.app.rate_limiter = RateLimiter::new_batched();
+        self
+    }
+
+    /// Every request will wait (requests_avalible) / (time_avalible)
+    /// so the delays are evenly spaced.
+    pub fn rate_limit_paced(mut self) -> Self {
+        self.app.rate_limiter = RateLimiter::new_paced();
+        self
     }
 
     pub(crate) async fn get_data<T: DeserializeOwned>(
         &self,
         ep: Endpoint,
     ) -> io::Result<RedditResponseGeneric<T>> {
-        self.create_request::<RedditResponseGeneric<T>>(ep.as_api_endpoint()?)
+
+        self.app
+            .create_request::<RedditResponseGeneric<T>>(ep.as_api_endpoint()?)
             .await
     }
 
@@ -121,7 +114,6 @@ impl Reddit {
         sort: SearchSort,
     ) -> io::Result<UserSearch<'r, 's>> {
         let search_ep = endpoints::USERS_SEARCH;
-        println!("{}", &search_ep.as_api_endpoint()?);
         UserSearch::new_search(self, search_ep, query, sort).await
     }
 

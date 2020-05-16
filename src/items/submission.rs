@@ -2,11 +2,7 @@ use crate::models::{CommentData, ListingData, PostInfo, RedditResponse};
 
 use crate::reddit::Reddit;
 
-use crate::items::{
-    AbstractedApi,
-    user::RedditUserLink,
-    post::Post,
-};
+use crate::items::{post::Post, user::RedditUserLink, AbstractedApi};
 
 /// Post + Comments
 pub struct Submission<'r> {

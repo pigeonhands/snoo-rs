@@ -2,7 +2,7 @@
 
 [![](https://img.shields.io/crates/v/snoo?style=for-the-badge)](https://crates.io/crates/snoo)
 
-Work in progress reddit client for rust. Currently only usefull for crawling.
+Work in progress reddit client for rust.
 
 See  [/examples](https://github.com/pigeonhands/snoo-rs/tree/master/examples) for more.
 

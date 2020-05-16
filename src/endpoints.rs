@@ -43,7 +43,8 @@ impl SearchSort {
 pub struct Endpoint(Cow<'static, str>);
 
 impl Endpoint {
-    const REDDIT_URL: &'static str = "https://reddit.com";
+    pub const REDDIT_URL: &'static str = "https://api.reddit.com";
+    pub const REDDIT_OAUTH_HOST: &'static str = "oauth.reddit.com";
 
     pub fn new(ep: &str) -> Endpoint {
         Endpoint(Cow::Owned(ep.to_owned()))

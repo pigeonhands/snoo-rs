@@ -1,14 +1,7 @@
 use crate::models::UserInfo;
-use crate::{
-    reddit::Reddit,
-    endpoints
-};
+use crate::{endpoints, reddit::Reddit};
 
-use crate::items::{
-    AbstractedApi,
-    submission::Comment,
-    post::Post,
-};
+use crate::items::{post::Post, submission::Comment, AbstractedApi};
 
 use std::io;
 

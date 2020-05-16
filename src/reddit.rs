@@ -4,6 +4,7 @@ use crate::models::{ListingData, RedditResponse, RedditResponseGeneric};
 use crate::search::{PostSearch, SubredditSearch};
 use crate::{endpoints, submission::Submission, subreddit::SubredditLink, user::RedditUserLink};
 
+use crate::AbstractedApi;
 use reqwest::{Client, Url};
 use serde::de::DeserializeOwned;
 use std::io;
@@ -71,6 +72,12 @@ impl Reddit {
         let data = self.get_data::<ListingData<T>>(ep).await?;
         let infos = data.data.inner_children();
         Ok(infos)
+    }
+
+    /// Takes a Api model and binds it to the 
+    /// Reddit instance so api calls can be made.
+    pub fn bind<'r, T: AbstractedApi<'r>>(&'r self, api_data: T::ApiType) -> T::AbstractedType {
+        T::from_parent(self, api_data)
     }
 
     // Get a user by name

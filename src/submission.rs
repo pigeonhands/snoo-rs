@@ -13,20 +13,20 @@ pub struct Submission<'r> {
 }
 
 impl<'r> Submission<'r> {
-    pub(crate) fn from_resp(parent: &'r Reddit, listing: ListingData<RedditResponse>) -> Self {
+    pub(crate) fn from_resp(reddit: &'r Reddit, listing: ListingData<RedditResponse>) -> Self {
         let mut op = PostInfo::default();
         let mut comments = Vec::new();
 
         for l in listing.children {
             match l.data {
                 RedditResponse::Post(post) => op = post,
-                RedditResponse::Comment(c) => comments.push(Comment::from_parent(parent, c)),
+                RedditResponse::Comment(api_data) => comments.push(reddit.bind::<Comment<'r>>(api_data)),
                 _ => {}
             }
         }
 
         Self {
-            op: Post::from_parent(parent, op),
+            op: reddit.bind::<Post<'r>>(op),
             comments: comments,
         }
     }

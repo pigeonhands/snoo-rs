@@ -1,9 +1,11 @@
 use crate::models::PostInfo;
 use crate::reddit::Reddit;
-use crate::submission::Submission;
-use crate::subreddit::SubredditLink;
-use crate::user::RedditUserLink;
-use crate::AbstractedApi;
+use crate::items::{
+    AbstractedApi,
+    submission::Submission,
+    subreddit::SubredditLink,
+    user::RedditUserLink,
+};
 
 use std::io;
 

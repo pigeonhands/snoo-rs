@@ -1,11 +1,15 @@
 use crate::endpoints::{self, SearchSort};
 use crate::models::{PostInfo, SubredditInfo};
-use crate::post::Post;
 use crate::reddit::Reddit;
-use crate::AbstractedApi;
-
 use crate::feed::ContentStream;
-use crate::search::PostSearch;
+
+use crate::items::{
+    AbstractedApi,
+    search::PostSearch,
+    post::Post,
+};
+
+
 use reqwest::Url;
 
 use chrono::{prelude::*, DateTime, Utc};

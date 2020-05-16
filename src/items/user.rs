@@ -1,7 +1,15 @@
 use crate::models::UserInfo;
-use crate::{endpoints, post::Post, reddit::Reddit, submission::Comment};
+use crate::{
+    reddit::Reddit,
+    endpoints
+};
 
-use crate::AbstractedApi;
+use crate::items::{
+    AbstractedApi,
+    submission::Comment,
+    post::Post,
+};
+
 use std::io;
 
 /// Weak link to the user.
@@ -95,5 +103,3 @@ impl<'r> AbstractedApi<'r> for RedditUser<'r> {
         }
     }
 }
-
-pub struct UserOverview {}

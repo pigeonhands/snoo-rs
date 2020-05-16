@@ -1,8 +1,12 @@
 use crate::reddit::Reddit;
 
 use crate::models::{RedditResponseGeneric, SearchInfo};
-use crate::AbstractedApi;
-use crate::{post::Post, subreddit::Subreddit};
+use crate::items::{
+    AbstractedApi,
+    post::Post,
+    subreddit::Subreddit,
+    user::RedditUser,
+};
 
 use crate::endpoints::SearchSort;
 
@@ -13,7 +17,7 @@ use std::rc::Rc;
 
 pub type PostSearch<'r, 's> = RedditSearch<'r, 's, Post<'r>>;
 pub type SubredditSearch<'r, 's> = RedditSearch<'r, 's, Subreddit<'r>>;
-pub type UserSearch<'r, 's> = RedditSearch<'r, 's, Subreddit<'r>>;
+pub type UserSearch<'r, 's> = RedditSearch<'r, 's, RedditUser<'r>>;
 
 struct SearchParams<'r, 's> {
     reddit: &'r Reddit,

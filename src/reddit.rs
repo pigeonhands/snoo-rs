@@ -1,10 +1,14 @@
-use crate::endpoints::{Endpoint, SearchSort};
+use crate::endpoints::{self, Endpoint, SearchSort};
 use crate::models::{ListingData, RedditResponse, RedditResponseGeneric};
 
-use crate::search::{PostSearch, SubredditSearch};
-use crate::{endpoints, submission::Submission, subreddit::SubredditLink, user::RedditUserLink};
+use crate::items::{
+    AbstractedApi,
+    search::{PostSearch, SubredditSearch, UserSearch},
+    submission::Submission,subreddit::SubredditLink,
+    user::RedditUserLink
+};
 
-use crate::AbstractedApi;
+
 use reqwest::{Client, Url};
 use serde::de::DeserializeOwned;
 use std::io;
@@ -108,6 +112,17 @@ impl Reddit {
     ) -> io::Result<SubredditSearch<'r, 's>> {
         let search_ep = endpoints::SUBREDDITS_SEARCH;
         SubredditSearch::new_search(self, search_ep, query, sort).await
+    }
+
+    /// Search for a subreddit
+    pub async fn search_users<'r, 's>(
+        &'r self,
+        query: &'s str,
+        sort: SearchSort,
+    ) -> io::Result<UserSearch<'r, 's>> {
+        let search_ep = endpoints::USERS_SEARCH;
+        println!("{}", &search_ep.as_api_endpoint()?);
+        UserSearch::new_search(self, search_ep, query, sort).await
     }
 
     /// Get post info

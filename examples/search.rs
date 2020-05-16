@@ -6,6 +6,12 @@ use tokio;
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let r = Reddit::new()?;
 
+    println!("## user search");
+    let pigeon_users = r.search_users("pigeon", SearchSort::New).await?;
+    for u in pigeon_users.results().iter().take(3) {
+        println!("/u/{}", u.name());
+    }
+
     println!("## post search");
     let pigeon_posts = r.search("pigeon", SearchSort::New).await?;
     for p in pigeon_posts.results().iter().take(3) {

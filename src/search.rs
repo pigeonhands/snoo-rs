@@ -1,7 +1,7 @@
 use crate::reddit::Reddit;
 
-use crate::models::{RedditResponseGeneric, SearchInfo, PostInfo};
-use crate::ChildRedditItem;
+use crate::models::{RedditResponseGeneric, SearchInfo};
+use crate::AbstractedApi;
 use crate::{post::Post, subreddit::Subreddit};
 
 use crate::endpoints::SearchSort;
@@ -10,7 +10,6 @@ use crate::endpoints::Endpoint;
 
 use std::io;
 use std::rc::Rc;
-
 
 pub type PostSearch<'r, 's> = RedditSearch<'r, 's, Post<'r>>;
 pub type SubredditSearch<'r, 's> = RedditSearch<'r, 's, Subreddit<'r>>;
@@ -23,14 +22,14 @@ struct SearchParams<'r, 's> {
     endpoint: Endpoint,
 }
 
-pub struct RedditSearch<'r, 's, T: ChildRedditItem<'r>> {
+pub struct RedditSearch<'r, 's, T: AbstractedApi<'r>> {
     params: Rc<SearchParams<'r, 's>>,
-    results: Vec<T::DataType>,
+    results: Vec<T::AbstractedType>,
     before: Option<String>,
     after: Option<String>,
 }
 
-impl<'r, 's, T: ChildRedditItem<'r>> RedditSearch<'r, 's, T> {
+impl<'r, 's, T: AbstractedApi<'r>> RedditSearch<'r, 's, T> {
     pub(crate) async fn new_search(
         parent: &'r Reddit,
         search_ep: Endpoint,
@@ -58,7 +57,7 @@ impl<'r, 's, T: ChildRedditItem<'r>> RedditSearch<'r, 's, T> {
 
         let search = params
             .reddit
-            .create_request::<RedditResponseGeneric<SearchInfo<T::Metadata>>>(ep)
+            .create_request::<RedditResponseGeneric<SearchInfo<T::ApiType>>>(ep)
             .await?
             .data;
 
@@ -76,7 +75,7 @@ impl<'r, 's, T: ChildRedditItem<'r>> RedditSearch<'r, 's, T> {
     }
 
     /// Current search results
-    pub fn results(&self) -> &Vec<T::DataType> {
+    pub fn results(&self) -> &Vec<T::AbstractedType> {
         &self.results
     }
 

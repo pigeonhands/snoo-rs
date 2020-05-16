@@ -58,5 +58,13 @@ pub struct PostInfo {
     pub url: String,
     pub is_crosspostable: bool,
     pub num_crossposts: i32,
+    pub created: f64,
     pub crosspost_parent: Option<String>,
+}
+
+use crate::feed::Feedable;
+impl Feedable for PostInfo{
+    fn feed_id(&self) -> String {
+        self.name.clone()
+    }
 }

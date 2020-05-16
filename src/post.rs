@@ -3,7 +3,7 @@ use crate::reddit::Reddit;
 use crate::submission::Submission;
 use crate::subreddit::SubredditLink;
 use crate::user::RedditUserLink;
-use crate::ChildRedditItem;
+use crate::AbstractedApi;
 
 use std::io;
 
@@ -12,11 +12,11 @@ pub struct Post<'r> {
     info: PostInfo,
 }
 
-impl<'r> ChildRedditItem<'r> for Post<'r> {
-    type DataType = Post<'r>;
-    type Metadata = PostInfo;
+impl<'r> AbstractedApi<'r> for Post<'r> {
+    type ApiType = PostInfo;
+    type AbstractedType = Post<'r>;
 
-    fn from_parent(parent: &'r Reddit, info: Self::Metadata) -> Self {
+    fn from_parent(parent: &'r Reddit, info: Self::ApiType) -> Self {
         Self {
             reddit: parent,
             info: info,

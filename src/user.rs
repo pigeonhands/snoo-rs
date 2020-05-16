@@ -1,7 +1,7 @@
 use crate::models::UserInfo;
 use crate::{endpoints, post::Post, reddit::Reddit, submission::Comment};
 
-use crate::ChildRedditItem;
+use crate::AbstractedApi;
 use std::io;
 
 /// Weak link to the user.
@@ -84,11 +84,11 @@ impl<'r> RedditUser<'r> {
     }
 }
 
-impl<'r> ChildRedditItem<'r> for RedditUser<'r> {
-    type DataType = RedditUser<'r>;
-    type Metadata = UserInfo;
+impl<'r> AbstractedApi<'r> for RedditUser<'r> {
+    type ApiType = UserInfo;
+    type AbstractedType = RedditUser<'r>;
 
-    fn from_parent(reddit: &'r Reddit, info: Self::Metadata) -> RedditUser<'r> {
+    fn from_parent(reddit: &'r Reddit, info: Self::ApiType) -> RedditUser<'r> {
         RedditUser {
             link: RedditUserLink::new(reddit, &info.name),
             info: info,

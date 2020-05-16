@@ -1,82 +1,103 @@
 use crate::reddit::Reddit;
 
-use crate::models::{RedditResponseGeneric, SearchInfo, PostInfo};
-use crate::ChildRedditItem;
-use crate::{post::Post};
+use crate::models::{RedditResponseGeneric, SearchInfo};
+use crate::AbstractedApi;
 
-use crate::endpoints::SearchSort;
-
-use crate::endpoints::Endpoint;
+use crate::endpoints::{Endpoint, SearchSort};
 
 use std::io;
 
+use tokio::sync::mpsc;
+use tokio::time::{delay_for, Duration};
+use std::marker::PhantomData;
 
-use std::sync::mpsc;
-use tokio::task;
-use tokio::time::{Duration, delay_for};
+use serde::de::DeserializeOwned;
 
-pub struct PostFeed{
-    reddit: Reddit,
-    endpoint: Endpoint,
+pub trait Feedable : Clone+Send+Sync+ 'static{
+    fn feed_id(&self) -> String;
 }
 
-impl PostFeed{
-    pub fn new(reddit: Reddit, search_ep: Endpoint) -> PostFeed {
-        PostFeed {
+pub struct ContentStream<T>
+where
+T: Feedable + DeserializeOwned,
+{
+    phantom: PhantomData<T>,
+    reddit: Reddit,
+    endpoint: Endpoint,
+    delay: Duration,
+}
+
+impl<T> ContentStream<T>
+where
+T: Feedable + DeserializeOwned,
+{
+    pub fn new(reddit: Reddit, search_ep: Endpoint) -> ContentStream<T> {
+        ContentStream {
+            phantom: PhantomData,
             reddit: reddit,
             endpoint: search_ep,
+            delay: Duration::from_secs(3),
         }
     }
 
-    async fn query<'a>(&'a self, before: &Option<String>) -> io::Result<Vec<Post<'a>>>{
-        let ep = self.endpoint
-            .as_filter_url::<String>(None, SearchSort::New, None, None)?;
-
-        let search = self.reddit
-            .create_request::<RedditResponseGeneric<SearchInfo<PostInfo>>>(ep)
-            .await?
-            .data;
-
-        let results = {
-            let result_info = search.results.inner_children();
-            Post::list_of(&self.reddit, &result_info)
-        };
-
-        Ok(results)
+    pub fn delay(mut self, delay: Duration) -> Self {
+        self.delay = delay;
+        self
     }
 
-    async fn  run(self, tx: mpsc::Sender<PostInfo>) {
-        println!("goo");
-        let mut last_item = if let Some(item) = self.query(&None).await.unwrap().first() {
-            Some(item.info().name.clone())
-        }else{
-            None
+    async fn read_feed(self, mut tx: mpsc::Sender<T>) -> io::Result<()> {
+        let mut newest_item = {
+            let initial_ep = self
+                .endpoint
+                .as_filter_url(None, SearchSort::New, None, None)?;
+
+            //Yikes
+            self.reddit
+                .create_request::<RedditResponseGeneric<SearchInfo<T>>>(initial_ep)
+                .await?
+                .data
+                .results
+                .children
+                .iter()
+                .nth(0)
+                .map(|e| e.data.feed_id())
         };
 
         loop {
-            let items = self.query(&last_item).await.unwrap();
-            println!("Items: {} | Last: {:?}", items.len(), last_item);
-            if items.len() > 0 {
-                last_item = Some(items[0].info().name.clone());
-            }
-            
-            for i in items {
-                tx.send(i.info().clone()).unwrap()
+            delay_for(self.delay).await;
+            let before = if let Some(e) = &newest_item{
+                Some(e.as_str())
+            }else{
+                None
+            };
+
+            let ep = self
+                .endpoint
+                .as_filter_url(None, SearchSort::New, before, None)
+                .unwrap();
+
+            let search = self
+                .reddit
+                .create_request::<RedditResponseGeneric<SearchInfo<T>>>(ep)
+                .await
+                .unwrap()
+                .data.results
+                .inner_children();
+            if search.len() > 0 {
+                newest_item = Some(search[0].feed_id().clone());
             }
 
-            delay_for(Duration::from_secs(3)).await;
+            for item in search.iter().rev() {
+                tx.send(item.clone()).await.map_err(|_| io::Error::new(io::ErrorKind::ConnectionReset, ""))?;
+            }
         }
     }
-    
-    pub fn start(self) -> mpsc::Receiver<PostInfo> {
-        println!("??");
-        let (tx, rx) = mpsc::channel();
-        
-        tokio::spawn(async {
-            println!("??1");
-           self.run(tx).await
-        });
 
-        rx
+    pub fn start(self) -> io::Result<mpsc::Receiver<T>> {
+        let (tx, rx) = mpsc::channel(10);
+        tokio::spawn(async {
+            self.read_feed(tx).await
+        });
+        Ok(rx)
     }
 }

@@ -2,7 +2,7 @@ use crate::models::{CommentData, ListingData, PostInfo, RedditResponse};
 
 use crate::post::Post;
 use crate::reddit::Reddit;
-use crate::ChildRedditItem;
+use crate::AbstractedApi;
 
 use crate::user::RedditUserLink;
 
@@ -56,11 +56,11 @@ impl<'r> Comment<'r> {
     }
 }
 
-impl<'r> ChildRedditItem<'r> for Comment<'r> {
-    type DataType = Comment<'r>;
-    type Metadata = CommentData;
+impl<'r> AbstractedApi<'r> for Comment<'r> {
+    type AbstractedType = Comment<'r>;
+    type ApiType = CommentData;
 
-    fn from_parent(parent: &'r Reddit, info: Self::Metadata) -> Self {
+    fn from_parent(parent: &'r Reddit, info: Self::ApiType) -> Self {
         Self {
             reddit: parent,
             data: info,

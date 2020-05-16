@@ -20,7 +20,9 @@ impl<'r> Submission<'r> {
         for l in listing.children {
             match l.data {
                 RedditResponse::Post(post) => op = post,
-                RedditResponse::Comment(api_data) => comments.push(reddit.bind::<Comment<'r>>(api_data)),
+                RedditResponse::Comment(api_data) => {
+                    comments.push(reddit.bind::<Comment<'r>>(api_data))
+                }
                 _ => {}
             }
         }

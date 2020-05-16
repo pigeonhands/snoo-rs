@@ -63,7 +63,7 @@ pub struct PostInfo {
 }
 
 use crate::feed::Feedable;
-impl Feedable for PostInfo{
+impl Feedable for PostInfo {
     fn feed_id(&self) -> String {
         self.name.clone()
     }

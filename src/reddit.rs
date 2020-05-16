@@ -74,7 +74,7 @@ impl Reddit {
         Ok(infos)
     }
 
-    /// Takes a Api model and binds it to the 
+    /// Takes a Api model and binds it to the
     /// Reddit instance so api calls can be made.
     pub fn bind<'r, T: AbstractedApi<'r>>(&'r self, api_data: T::ApiType) -> T::AbstractedType {
         T::from_parent(self, api_data)

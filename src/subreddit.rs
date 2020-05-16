@@ -1,5 +1,5 @@
 use crate::endpoints::{self, SearchSort};
-use crate::models::{SubredditInfo, PostInfo};
+use crate::models::{PostInfo, SubredditInfo};
 use crate::post::Post;
 use crate::reddit::Reddit;
 use crate::AbstractedApi;

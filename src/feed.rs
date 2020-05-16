@@ -1,25 +1,23 @@
 use crate::reddit::Reddit;
 
-use crate::models::{RedditResponseGeneric, SearchInfo};
-use crate::AbstractedApi;
-
 use crate::endpoints::{Endpoint, SearchSort};
+use crate::models::{RedditResponseGeneric, SearchInfo};
 
 use std::io;
 
+use std::marker::PhantomData;
 use tokio::sync::mpsc;
 use tokio::time::{delay_for, Duration};
-use std::marker::PhantomData;
 
 use serde::de::DeserializeOwned;
 
-pub trait Feedable : Clone+Send+Sync+ 'static{
+pub trait Feedable: Clone + Send + Sync + 'static {
     fn feed_id(&self) -> String;
 }
 
 pub struct ContentStream<T>
 where
-T: Feedable + DeserializeOwned,
+    T: Feedable + DeserializeOwned,
 {
     phantom: PhantomData<T>,
     reddit: Reddit,
@@ -29,7 +27,7 @@ T: Feedable + DeserializeOwned,
 
 impl<T> ContentStream<T>
 where
-T: Feedable + DeserializeOwned,
+    T: Feedable + DeserializeOwned,
 {
     pub fn new(reddit: Reddit, search_ep: Endpoint) -> ContentStream<T> {
         ContentStream {
@@ -65,9 +63,9 @@ T: Feedable + DeserializeOwned,
 
         loop {
             delay_for(self.delay).await;
-            let before = if let Some(e) = &newest_item{
+            let before = if let Some(e) = &newest_item {
                 Some(e.as_str())
-            }else{
+            } else {
                 None
             };
 
@@ -81,23 +79,24 @@ T: Feedable + DeserializeOwned,
                 .create_request::<RedditResponseGeneric<SearchInfo<T>>>(ep)
                 .await
                 .unwrap()
-                .data.results
+                .data
+                .results
                 .inner_children();
             if search.len() > 0 {
                 newest_item = Some(search[0].feed_id().clone());
             }
 
             for item in search.iter().rev() {
-                tx.send(item.clone()).await.map_err(|_| io::Error::new(io::ErrorKind::ConnectionReset, ""))?;
+                tx.send(item.clone())
+                    .await
+                    .map_err(|_| io::Error::new(io::ErrorKind::ConnectionReset, ""))?;
             }
         }
     }
 
     pub fn start(self) -> io::Result<mpsc::Receiver<T>> {
         let (tx, rx) = mpsc::channel(10);
-        tokio::spawn(async {
-            self.read_feed(tx).await
-        });
+        tokio::spawn(async { self.read_feed(tx).await });
         Ok(rx)
     }
 }

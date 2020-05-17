@@ -10,4 +10,4 @@ pub use endpoints::SearchSort;
 pub use items::*;
 pub use rate_limit::RateLimiter;
 pub use reddit::Reddit;
-pub use reddit_app::RedditApp;
+pub use reddit_app::{RedditApp, RedditAppAuthenticationUrl};

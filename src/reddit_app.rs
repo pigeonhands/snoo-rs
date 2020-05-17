@@ -25,7 +25,7 @@ pub struct RedditApp {
 
 static USER_AGENT: &str = concat!(env!("CARGO_PKG_NAME"), "/", env!("CARGO_PKG_VERSION"),);
 
-pub fn reqwest_to_io_err(error: reqwest::Error) -> io::Error {
+fn reqwest_to_io_err(error: reqwest::Error) -> io::Error {
     io::Error::new(io::ErrorKind::Other, format!("{}", error))
 }
 
@@ -109,14 +109,29 @@ impl RedditApp {
 
     /// Autherise [RedditApp] as an application
     /// * `id` - reddit application id regstered on reddit
-    /// * `redirect_url` - The app redirect url registered on reddit
-    /// * `state` - state included in the redirect (can be anything)
+    /// * `auth_url` - The generated authentication callback url (can be generated with [create_authorization_url])
     pub async fn authorize_application(
+        &mut self,
+        code: &str,
+        auth_url: &RedditAppAuthenticationUrl,
+    ) -> io::Result<()> {
+        let grant = OAuthGrantType::AutherizationCode {
+            code,
+            redirect_url: auth_url.redirect_url(),
+        };
+
+        let auth = self.get_oauth_code(grant, auth_url.id(), None).await?;
+        self.authorize(auth).await
+    }
+
+    /// Creates a new authenticaton url with a
+    /// given scope and random state.
+    pub async fn create_authorization_url(
         &mut self,
         id: &str,
         scope: &[RedditAppScope],
         redirect_url: &str,
-    ) -> io::Result<RedditAppAuthentication<'_>> {
+    ) -> io::Result<RedditAppAuthenticationUrl> {
         let scope_str = scope
             .iter()
             .map(|e| e.as_str())
@@ -126,7 +141,7 @@ impl RedditApp {
         use rand::{distributions::Alphanumeric, Rng};
         let state: String = rand::thread_rng()
             .sample_iter(Alphanumeric)
-            .take(7)
+            .take(5)
             .collect();
 
         let redirect_url = endpoints::AUTHERIZE_APPLICATION
@@ -141,11 +156,10 @@ impl RedditApp {
             ])
             .to_url();
 
-        Ok(RedditAppAuthentication::new(
-            self,
+        Ok(RedditAppAuthenticationUrl::new(
             id.to_owned(),
             redirect_url.as_str().to_owned(),
-            state,
+            Some(state),
         ))
     }
 
@@ -248,36 +262,31 @@ impl RedditApp {
 
 /// Listens on authenticationc callback url for a
 /// autentication code
-pub struct RedditAppAuthentication<'r> {
-    app: &'r RedditApp,
+pub struct RedditAppAuthenticationUrl {
     id: String,
     redirect_url: String,
-    state: String,
-    refresh_token: Option<String>,
+    state: Option<String>,
 }
 
-impl<'r> RedditAppAuthentication<'r> {
-    pub fn new(app: &'r RedditApp, id: String, redirect_url: String, state: String) -> Self {
+impl RedditAppAuthenticationUrl {
+    pub fn new(id: String, redirect_url: String, state: Option<String>) -> Self {
         Self {
-            app,
             id,
             redirect_url,
             state,
-            refresh_token: None,
         }
     }
 
-    // todo: add authentication for applciation
-    pub async fn authenticate(&self, code: &str) -> io::Result<()> {
-        let grant = OAuthGrantType::AutherizationCode {
-            code,
-            redirect_url: &self.redirect_url,
-        };
+    pub fn redirect_url(&self) -> &str {
+        &self.redirect_url
+    }
 
-        let auth = self.app.get_oauth_code(grant, &self.id, None).await?;
-        //self.app.authorize(auth).await?;
+    pub fn state(&self) -> Option<&str> {
+        Some(self.state.as_ref()?)
+    }
 
-        Ok(())
+    pub fn id(&self) -> &str {
+        &self.id
     }
 }
 

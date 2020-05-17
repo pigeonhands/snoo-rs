@@ -290,8 +290,9 @@ impl RedditApi {
         })?.json;
 
         if api_resp.errors.len() > 0 {
+            let errs =  api_resp.errors.iter().flatten().map(|e: &String| e.as_ref()).collect::<Vec<&str>>();
             Err(
-                io::Error::new(io::ErrorKind::Other, format!("Api errors: [{}]", api_resp.errors.join(", ")))
+                io::Error::new(io::ErrorKind::Other, format!("Api errors: [{}]", errs.join(", ")))
             )?;
         }
 

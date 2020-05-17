@@ -2,11 +2,13 @@ use crate::items::{
     submission::Submission, subreddit::SubredditLink, user::RedditUserLink, AbstractedApi,
 };
 use crate::models::{
-    SubredditSubmitResponse,
+    RedditResponseGeneric,
+    ThingsResponse,
     PostInfo,
     PostEditText,
     PostSetFlair,
-    SendComment
+    SendComment,
+    CommentData
 };
 use crate::reddit::Reddit;
 use crate::endpoints;
@@ -60,12 +62,16 @@ impl Post<'_> {
         self.reddit.submission_from_link(&self.url()).await
     }
 
-    pub async fn comment(&self, message: &str) -> io::Result<SubredditSubmitResponse> {
+    pub async fn comment(&self, message: &str) -> io::Result<CommentData> {
         let target_url = self.reddit.ep(endpoints::COMMENT)?;
-        self.reddit.post_data::<_, SubredditSubmitResponse>(target_url, &SendComment{
+        let mut resp= self.reddit.post_data::<_, ThingsResponse<RedditResponseGeneric<CommentData>>>(target_url, &SendComment{
             thing_id: self.name(),
             text: message,
-        }).await
+        }).await?;
+
+        Ok(
+            resp.things.swap_remove(0).data
+        )
     }
 
     pub async fn set_flair(&self, flair_text: &str, flair_class: &str) -> io::Result<()> {

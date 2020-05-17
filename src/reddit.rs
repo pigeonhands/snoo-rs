@@ -1,7 +1,8 @@
 //! Reddit client.
 use crate::models::{
+    PostInfo,
+    CommentData,
     ListingData, 
-    RedditResponse, 
     RedditResponseGeneric,
     RedditJsonApiType
 };
@@ -169,13 +170,10 @@ impl Reddit {
     pub async fn submission_from_link(&self, url: &'_ str) -> io::Result<Submission<'_>> {
         let page_link = self.ep_str(url)?;
 
-        let mut post_data = self.api
-            .get_api::<Vec<RedditResponseGeneric<ListingData<RedditResponse>>>>(page_link.to_url())
+        let (post, comment) = self.api
+            .get_api::<(RedditResponseGeneric<ListingData<PostInfo>>, RedditResponseGeneric<ListingData<CommentData>>)>(page_link.to_url())
             .await?;
-        let post = post_data.swap_remove(0);
-        let comments = post_data.swap_remove(1);
 
-        Err(io::Error::new(io::ErrorKind::Other, "Noe done."))
-       // Ok(Submission::from_resp(self, post.data, comments.data))
+        Ok(Submission::from_resp(self, post.data, comment.data))
     }
 }

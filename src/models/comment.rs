@@ -1,4 +1,4 @@
-use crate::models::{ModerateData, RedditResponse, VoteData};
+use crate::models::{ModerateData, VoteData};
 use serde::{Deserialize, Serialize};
 
 
@@ -12,7 +12,7 @@ pub struct SendComment<'a> {
 #[serde(untagged)]
 pub enum CommentReplies {
     NoReply(String),
-    HasReplies(Vec<RedditResponse>),
+    HasReplies(Vec<CommentData>),
 }
 
 impl Default for CommentReplies {
@@ -35,7 +35,30 @@ pub struct CommentData {
     pub parent_id: String,
     pub subreddit: String,
     pub link_id: String,
-    pub link_title: String,
+    pub link_title: Option<String>,
+
+    pub replies: CommentReplies,
+
+    pub total_awards_received: i32,
+    pub approved_at_utc: Option<f32>,
+}
+
+
+#[derive(Deserialize, Debug, Clone)]
+pub struct CommentSubmitResponse {
+    #[serde(flatten)]
+    pub vote_data: VoteData,
+
+    #[serde(flatten)]
+    pub moderate_data: ModerateData,
+
+    pub author: String,
+    pub body: String,
+    pub body_html: String,
+    pub parent_id: String,
+    pub subreddit: String,
+    pub link_id: String,
+    pub link_title: Option<String>,
 
     pub replies: CommentReplies,
 

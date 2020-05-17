@@ -12,6 +12,10 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     let new_post = r.submission_from_link("https://www.reddit.com/r/test/comments/glccw4/test_from_snoors/").await?;
     println!("{:?}", new_post.op().title());
+    for comment in new_post.comments() {
+        println!("\t{}", comment.body());
+    }
+
     let resp = new_post.op().comment("test comment").await?;
     println!("{:?}", resp);
 

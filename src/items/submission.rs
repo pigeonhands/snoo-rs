@@ -1,4 +1,4 @@
-use crate::models::{CommentData, ListingData, PostInfo, RedditResponse, SendComment};
+use crate::models::{CommentData, ListingData, PostInfo, SendComment};
 
 use crate::reddit::Reddit;
 
@@ -14,11 +14,11 @@ pub struct Submission<'r> {
 }
 
 impl<'r> Submission<'r> {
-    pub(crate) fn from_resp(reddit: &'r Reddit, op: ListingData<PostInfo>, comments: ListingData<CommentData>) -> Self {
+    pub(crate) fn from_resp(reddit: &'r Reddit, mut op: ListingData<PostInfo>, comments: ListingData<CommentData>) -> Self {
 
         Self {
-            op: reddit.bind::<Post>(op.children[0]),
-            comments: comments.children,
+            op: reddit.bind::<Post>(op.children.swap_remove(0).data),
+            comments: comments.inner_children().iter().map(|e| reddit.bind::<Comment>(e.clone())).collect(),
         }
     }
 
@@ -49,6 +49,10 @@ impl Comment<'_> {
 
     pub fn name(&self) -> &str {
         self.data.moderate_data.name.as_str()
+    }
+
+    pub fn body(&self) -> &str {
+        self.data.body.as_str()
     }
 
     pub async fn reply(&self, message: &str) -> io::Result<()> {

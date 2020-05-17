@@ -26,13 +26,19 @@ pub struct EmptyResponse();
 
 #[derive(Deserialize, Clone, Debug)]
 pub struct RedditPostResponseJson<T> {
-    pub errors: Vec<String>,
+    pub errors: Vec<Vec<String>>,
     pub data: Option<T>,
 }
 
 #[derive(Deserialize, Clone, Debug)]
 pub struct RedditPostResponse<T> {
     pub json: RedditPostResponseJson<T>,
+}
+
+
+#[derive(Deserialize, Clone, Debug)]
+pub struct ThingsResponse<T> {
+    pub things: Vec<T>,
 }
 
 

@@ -139,6 +139,16 @@ impl Endpoint {
         }
         self
     }
+
+    pub fn add_query_pairs(mut self, pairs: &[(&str, &str)]) -> Self {
+        {
+            let mut query = self.0.query_pairs_mut();
+            for (name, value) in pairs {
+                query.append_pair(name, value);
+            }
+        }
+        self
+    }
 }
 
 impl AsRef<str> for Endpoint {
@@ -149,6 +159,7 @@ impl AsRef<str> for Endpoint {
 
 endpoints! {
     ACCESS_TOKEN =>            "api/v1/access_token/",
+    AUTHERIZE_APPLICATION =>   "api/v1/authorize/",
     ABOUT_EDITED =>            "r/#subreddit/about/edited/",
     ABOUT_LOG =>               "r/#subreddit/about/log/",
     ABOUT_MODQUEUE =>          "r/#subreddit/about/modqueue/",

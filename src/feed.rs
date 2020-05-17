@@ -1,18 +1,18 @@
 //! A feed of content.
 //! e.g.
 //! a feed of new [crate::item::submission::Post] from a [crate::item::subreddit::Subreddit]
-//! 
+//!
 //! ```
 //! let r = Reddit::new()?;
 //! let all = r.subreddit("all");
-//! 
+//!
 //! let feed = all.feed()?.delay(Duration::from_secs(5));
 //! let mut rx = feed.start()?;
-//! 
+//!
 //! while let Some(d) = rx.recv().await {
 //!     println!("{} \t {}", d.created, d.name);
 //! }
-//! 
+//!
 //! ```
 use crate::reddit::Reddit;
 

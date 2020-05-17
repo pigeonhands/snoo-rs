@@ -39,7 +39,7 @@ impl Reddit {
 
     /// Creates a new reddit insance with an unauthenicated
     /// and not rate limited [RedditApp].
-    /// Same as 
+    /// Same as
     /// ```Reddit::from_app(RedditApp::new()?)```
     pub fn new() -> io::Result<Reddit> {
         Reddit::from_app(RedditApp::new()?)
@@ -53,7 +53,11 @@ impl Reddit {
         id: &str,
         secret: &str,
     ) -> io::Result<Reddit> {
-        Reddit::from_app(RedditApp::new_script(username, password, id, secret).await?)
+        let mut r = Reddit::new()?;
+        r.app
+            .authorize_script(username, password, id, secret)
+            .await?;
+        Ok(r)
     }
 
     /// Takes a Api model and binds it to the
@@ -92,7 +96,7 @@ impl Reddit {
     }
 
     /// Set the rate limiter for the application
-    /// e.g. 
+    /// e.g.
     /// [RateLimiter::new_batched()] or [RateLimiter::new_paced()]
     pub fn rate_limiter(mut self, limiter: RateLimiter) -> Self {
         self.app.rate_limiter = limiter;

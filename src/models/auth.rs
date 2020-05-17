@@ -6,6 +6,7 @@ pub struct AuthResponse {
     pub access_token: Option<String>,
     pub token_type: Option<String>,
     pub expires_in: Option<i32>,
+    pub refresh_token: Option<String>,
     pub scope: Option<String>,
 }
 

@@ -23,7 +23,7 @@ impl<'r> AbstractedApi<'r> for Post<'r> {
     }
 }
 
-impl<'r> Post<'r> {
+impl Post<'_> {
     pub fn info(&self) -> &PostInfo {
         &self.info
     }
@@ -32,15 +32,15 @@ impl<'r> Post<'r> {
         self.info.url.as_ref()
     }
 
-    pub fn subreddit(&self) -> SubredditLink<'r> {
+    pub fn subreddit(&'_ self) -> SubredditLink {
         self.reddit.subreddit(&self.info.subreddit)
     }
 
-    pub fn author(&self) -> RedditUserLink<'r> {
+    pub fn author(&self) -> RedditUserLink {
         RedditUserLink::new(self.reddit, &self.info.author)
     }
 
-    pub async fn submission(&self) -> io::Result<Submission<'r>> {
+    pub async fn submission(&'_ self) -> io::Result<Submission<'_>> {
         self.reddit.submission_from_link(&self.url()).await
     }
 }

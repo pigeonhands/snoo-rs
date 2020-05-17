@@ -166,7 +166,7 @@ impl RedditApp {
                 url.set_host(Some(Endpoint::REDDIT_OAUTH_HOST)).map_err(|e| {
                     io::Error::new(
                         io::ErrorKind::ConnectionAborted,
-                        format!("Failed to send get request. {}", e),
+                        format!("Failed set host. {}", e),
                     )
                 })?;
             };

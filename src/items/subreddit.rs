@@ -115,7 +115,7 @@ impl<'r> AbstractedApi<'r> for Subreddit<'r> {
     fn from_parent(reddit: &'r Reddit, info: Self::ApiType) -> Subreddit<'r> {
         Subreddit {
             link: SubredditLink::new(reddit, &info.display_name),
-            info: info,
+            info,
         }
     }
 }

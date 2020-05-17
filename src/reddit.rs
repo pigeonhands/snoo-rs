@@ -62,8 +62,8 @@ impl Reddit {
             .await
     }
 
-    pub(crate) async fn get_list<'r, T: DeserializeOwned>(
-        &'r self,
+    pub(crate) async fn get_list<T: DeserializeOwned>(
+        &self,
         ep: Endpoint,
     ) -> io::Result<Vec<T>> {
         let data = self.get_data::<ListingData<T>>(ep).await?;
@@ -78,12 +78,12 @@ impl Reddit {
     }
 
     // Get a user by name
-    pub fn user<'r>(&'r self, username: &str) -> RedditUserLink<'r> {
+    pub fn user(&self, username: &str) -> RedditUserLink {
         RedditUserLink::new(self, username)
     }
 
     //get a subreddit by name
-    pub fn subreddit<'r>(&'r self, name: &str) -> SubredditLink<'r> {
+    pub fn subreddit(&self, name: &str) -> SubredditLink {
         SubredditLink::new(self, name)
     }
 
@@ -119,7 +119,7 @@ impl Reddit {
 
     /// Get post info
     /// a "Submission" is a post + comments
-    pub async fn submission_from_link<'a>(&'a self, url: &str) -> io::Result<Submission<'a>> {
+    pub async fn submission_from_link(&self, url: &'_ str) -> io::Result<Submission<'_>> {
         let page_link = Endpoint::new(url);
         let post_data = self
             .get_data::<ListingData<RedditResponse>>(page_link)

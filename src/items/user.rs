@@ -51,7 +51,7 @@ pub struct RedditUser<'r> {
     info: UserInfo,
 }
 
-impl<'r> RedditUser<'r> {
+impl RedditUser<'_> {
     pub fn name(&self) -> &str {
         self.info.name.as_ref()
     }
@@ -76,11 +76,11 @@ impl<'r> RedditUser<'r> {
         self.info.is_gold
     }
 
-    pub async fn submitted(&self) -> io::Result<Vec<Post<'r>>> {
+    pub async fn submitted(&'_ self) -> io::Result<Vec<Post<'_>>> {
         self.link.submitted().await
     }
 
-    pub async fn comments(&self) -> io::Result<Vec<Comment<'r>>> {
+    pub async fn comments(&'_ self) -> io::Result<Vec<Comment<'_>>> {
         self.link.comments().await
     }
 }
@@ -92,7 +92,7 @@ impl<'r> AbstractedApi<'r> for RedditUser<'r> {
     fn from_parent(reddit: &'r Reddit, info: Self::ApiType) -> RedditUser<'r> {
         RedditUser {
             link: RedditUserLink::new(reddit, &info.name),
-            info: info,
+            info,
         }
     }
 }

@@ -19,14 +19,14 @@ impl<'r> Submission<'r> {
             match l.data {
                 RedditResponse::Post(post) => op = post,
                 RedditResponse::Comment(api_data) => {
-                    comments.push(reddit.bind::<Comment<'r>>(api_data))
+                    comments.push(reddit.bind::<Comment>(api_data))
                 }
                 _ => {}
             }
         }
 
         Self {
-            op: reddit.bind::<Post<'r>>(op),
+            op: reddit.bind::<Post>(op),
             comments: comments,
         }
     }
@@ -46,7 +46,7 @@ pub struct Comment<'r> {
     data: CommentData,
 }
 
-impl<'r> Comment<'r> {
+impl Comment<'_> {
     pub fn info(&self) -> &CommentData {
         &self.data
     }

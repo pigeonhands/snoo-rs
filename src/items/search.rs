@@ -89,11 +89,11 @@ impl<'r, 's, T: AbstractedApi<'r>> RedditSearch<'r, 's, T> {
     }
 
     /// Previous page of results
-    pub async fn prev(&self) -> Option<io::Result<RedditSearch<'r, 's, T>>> {
-        if let Some(prev) = &self.before {
-            Some(Self::search(self.params.clone(), Some(prev), None).await)
+    pub async fn prev(&self) -> io::Result<Option<RedditSearch<'r, 's, T>>> {
+        Ok(if let Some(prev) = &self.before {
+            Some(Self::search(self.params.clone(), Some(prev), None).await?)
         } else {
             None
-        }
+        })
     }
 }

@@ -49,30 +49,30 @@ impl RedditApp {
         })
     }
 
-        pub async fn get_oauth_code(
-            &self,
-            grant_type: OAuthGrantType<'_>,
-            id: &str,
-            secret: Option<&str>,
-        ) -> io::Result<AuthResponse> {
-    
-            let req = self
-                .client
-                .post(endpoints::ACCESS_TOKEN.ssl_ep()?.to_url())
-                .form(&grant_type.as_params())
-                .basic_auth(id, secret);
-    
-            let resp = req
-                .send()
-                .await
-                .map_err(reqwest_to_io_err)?
-                .json::<AuthResponse>()
-                .await
-                .map_err(reqwest_to_io_err)?;
-    
-            Ok(resp)
-        }
-    
+    /// Request a new oauth code from the reddit api.
+    pub async fn get_oauth_code(
+        &self,
+        grant_type: OAuthGrantType<'_>,
+        id: &str,
+        secret: Option<&str>,
+    ) -> io::Result<AuthResponse> {
+        let req = self
+            .client
+            .post(endpoints::ACCESS_TOKEN.ssl_ep()?.to_url())
+            .form(&grant_type.as_params())
+            .basic_auth(id, secret);
+
+        let resp = req
+            .send()
+            .await
+            .map_err(reqwest_to_io_err)?
+            .json::<AuthResponse>()
+            .await
+            .map_err(reqwest_to_io_err)?;
+
+        Ok(resp)
+    }
+
     /// Creates a new authenicated script application
     async fn authorize(&mut self, auth: AuthResponse) -> io::Result<()> {
         if let Some(err) = auth.error {
@@ -101,10 +101,7 @@ impl RedditApp {
         id: &str,
         secret: &str,
     ) -> io::Result<()> {
-        let grant = OAuthGrantType::Password{
-            username,
-            password
-        };
+        let grant = OAuthGrantType::Password { username, password };
 
         let auth = self.get_oauth_code(grant, id, Some(secret)).await?;
         self.authorize(auth).await
@@ -141,9 +138,15 @@ impl RedditApp {
                 ("state", &state),
                 ("redirect_uri", redirect_url),
                 ("scope", &scope_str),
-            ]).to_url();
+            ])
+            .to_url();
 
-        Ok(RedditAppAuthentication::new(self, id.to_owned(), redirect_url.as_str().to_owned(), state))
+        Ok(RedditAppAuthentication::new(
+            self,
+            id.to_owned(),
+            redirect_url.as_str().to_owned(),
+            state,
+        ))
     }
 
     pub async fn me(&self) -> io::Result<OAuthMeResponse> {
@@ -219,7 +222,7 @@ impl RedditApp {
 
         let mut req = self.client.get(target_url);
 
-        if let AuthType::OAuth(token) = &self.auth{
+        if let AuthType::OAuth(token) = &self.auth {
             req = req.bearer_auth(token);
         }
 
@@ -268,8 +271,8 @@ impl<'r> RedditAppAuthentication<'r> {
     pub async fn authenticate(&self, code: &str) -> io::Result<()> {
         let grant = OAuthGrantType::AutherizationCode {
             code,
-            redirect_url: &self.redirect_url
-        }; 
+            redirect_url: &self.redirect_url,
+        };
 
         let auth = self.app.get_oauth_code(grant, &self.id, None).await?;
         //self.app.authorize(auth).await?;

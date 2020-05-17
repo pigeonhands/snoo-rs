@@ -45,14 +45,14 @@ where
 
     async fn read_feed(self, mut tx: mpsc::Sender<T>) -> io::Result<()> {
         let mut newest_item = {
-            let initial_ep = self
+            let endpoint = self
                 .endpoint
-                .as_filter_url(None, SearchSort::New, None, None)?;
-
+                .clone()
+                .filter(None, SearchSort::New, None, None);
             //Yikes
             self.reddit
                 .app
-                .create_request::<RedditResponseGeneric<SearchInfo<T>>>(initial_ep)
+                .create_request::<RedditResponseGeneric<SearchInfo<T>>>(endpoint.to_url())
                 .await?
                 .data
                 .results
@@ -72,13 +72,13 @@ where
 
             let ep = self
                 .endpoint
-                .as_filter_url(None, SearchSort::New, before, None)
-                .unwrap();
+                .clone()
+                .filter(None, SearchSort::New, before, None);
 
             let search = self
                 .reddit
                 .app
-                .create_request::<RedditResponseGeneric<SearchInfo<T>>>(ep)
+                .create_request::<RedditResponseGeneric<SearchInfo<T>>>(ep.to_url())
                 .await
                 .unwrap()
                 .data

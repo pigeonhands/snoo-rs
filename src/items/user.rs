@@ -22,12 +22,16 @@ impl<'r> RedditUserLink<'r> {
     }
 
     pub async fn submitted(&self) -> io::Result<Vec<Post<'r>>> {
-        let ep = endpoints::USER_SUBMITTED.user(&self.username);
+        let ep = self
+            .reddit
+            .ep(endpoints::USER_SUBMITTED.user(&self.username))?;
         Ok(Post::list_of(self.reddit, &self.reddit.get_list(ep).await?))
     }
 
     pub async fn comments(&self) -> io::Result<Vec<Comment<'r>>> {
-        let ep = endpoints::USER_COMMENTS.user(&self.username);
+        let ep = self
+            .reddit
+            .ep(endpoints::USER_COMMENTS.user(&self.username))?;
         Ok(Comment::list_of(
             self.reddit,
             &self.reddit.get_list(ep).await?,
@@ -35,7 +39,7 @@ impl<'r> RedditUserLink<'r> {
     }
 
     pub async fn get(self) -> io::Result<RedditUser<'r>> {
-        let ep = endpoints::USER_ABOUT.user(&self.username);
+        let ep = self.reddit.ep(endpoints::USER_ABOUT.user(&self.username))?;
         let about = self.reddit.get_data::<UserInfo>(ep).await?;
 
         Ok(RedditUser {

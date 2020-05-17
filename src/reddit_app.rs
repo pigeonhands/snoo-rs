@@ -4,7 +4,7 @@ use reqwest::{Client, Response, Url};
 use serde::{de::DeserializeOwned, Deserialize};
 use std::io;
 
-use crate::endpoints::Endpoint;
+use crate::endpoints::{Endpoint, EndpointBase, EndpointBuilder};
 
 use crate::models::auth::{AuthResponse, OAuthMeResponse};
 
@@ -111,6 +111,20 @@ impl RedditApp {
         self.create_request::<OAuthMeResponse>(endpoint).await
     }
 
+    /// Builds a new ep
+    pub fn create_endpoint(&self, builder: EndpointBuilder) -> io::Result<Endpoint> {
+        let ep_base = match self.auth {
+            AuthType::None => EndpointBase::Regular,
+            _ => EndpointBase::OAuth,
+        };
+        Endpoint::new(ep_base, builder)
+    }
+
+    /// Builds a new ep from a string
+    pub fn create_enddpoint_str(&self, str_ep: &str) -> io::Result<Endpoint> {
+        self.create_endpoint(Endpoint::build(str_ep))
+    }
+
     /// Validates status code and updates the
     // rate limiter if enabled.
     fn handle_http_response(&self, resp: &Response) -> io::Result<()> {
@@ -144,7 +158,7 @@ impl RedditApp {
 
             if let Some(tracker) = get_tracker() {
                 self.rate_limiter.update(tracker);
-            }else{
+            } else {
                 println!("No tracker.");
             }
         }
@@ -152,26 +166,10 @@ impl RedditApp {
         Ok(())
     }
     /// Used for all [GET] api calls.
-    pub async fn create_request<T: DeserializeOwned>(&self, target_url_ep: Url) -> io::Result<T> {
+    pub async fn create_request<T: DeserializeOwned>(&self, target_url: Url) -> io::Result<T> {
         if self.rate_limiter.should_wait() {
             self.rate_limiter.wait().await;
         }
-
-        // this is bad.
-        // need a way to change endpoint base if authenticated.
-        let target_url = {
-            let mut url= target_url_ep;
-            if let AuthType::None = &self.auth {
-            }else{
-                url.set_host(Some(Endpoint::REDDIT_OAUTH_HOST)).map_err(|e| {
-                    io::Error::new(
-                        io::ErrorKind::ConnectionAborted,
-                        format!("Failed set host. {}", e),
-                    )
-                })?;
-            };
-            url
-        };
 
         let mut req = self.client.get(target_url);
 

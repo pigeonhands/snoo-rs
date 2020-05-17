@@ -25,7 +25,9 @@ impl<'r> SubredditLink<'r> {
     }
 
     pub async fn get(self) -> io::Result<Subreddit<'r>> {
-        let ep = endpoints::SUBREDDIT_ABOUT.subreddit(&self.subreddit);
+        let ep = self
+            .reddit
+            .ep(endpoints::SUBREDDIT_ABOUT.subreddit(&self.subreddit))?;
         let info = self.reddit.get_data::<SubredditInfo>(ep).await?;
 
         Ok(Subreddit {
@@ -39,13 +41,17 @@ impl<'r> SubredditLink<'r> {
     }
 
     /// Stream of new posts in the subreddit.
-    pub fn feed(&self) -> ContentStream<PostInfo> {
-        let ep = endpoints::SUBREDDIT_NEW.subreddit(self.name());
-        ContentStream::new(self.reddit.clone(), ep)
+    pub fn feed(&self) -> io::Result<ContentStream<PostInfo>> {
+        let ep = self
+            .reddit
+            .ep(endpoints::SUBREDDIT_NEW.subreddit(self.name()))?;
+        Ok(ContentStream::new(self.reddit.clone(), ep))
     }
 
     pub async fn top(&self) -> io::Result<Vec<Post<'r>>> {
-        let ep = endpoints::SUBREDDIT_TOP.subreddit(&self.subreddit);
+        let ep = endpoints::SUBREDDIT_TOP
+            .subreddit(&self.subreddit)
+            .regular()?;
         Ok(Post::list_of(self.reddit, &self.reddit.get_list(ep).await?))
     }
 
@@ -54,7 +60,9 @@ impl<'r> SubredditLink<'r> {
         query: &'s str,
         sort: SearchSort,
     ) -> io::Result<PostSearch<'r, 's>> {
-        let search_ep = endpoints::SUBREDDIT_SEARCH.subreddit(&self.subreddit);
+        let search_ep = self
+            .reddit
+            .ep(endpoints::SUBREDDIT_SEARCH.subreddit(&self.subreddit))?;
         PostSearch::new_search(self.reddit, search_ep, query, sort).await
     }
 }

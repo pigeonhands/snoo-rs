@@ -5,14 +5,14 @@ use std::io;
 
 macro_rules! endpoints {
     ($($name:ident => $ep:tt),*) => {
-        $(pub const $name : Endpoint = Endpoint(Cow::Borrowed($ep));)*
+        $(pub const $name : EndpointBuilder = EndpointBuilder(Cow::Borrowed($ep));)*
     };
 }
 
 macro_rules! uri_segments {
     ($($name:ident),*) => {
         $(
-        pub fn $name(&self, $name: &str) -> Endpoint {
+        pub fn $name(&self, $name: &str) -> EndpointBuilder {
             self.replace(concat!("#", stringify!($name)), $name)
         }
         )*
@@ -40,14 +40,30 @@ impl SearchSort {
     }
 }
 
-pub struct Endpoint(Cow<'static, str>);
+pub enum EndpointBase {
+    Regular,
+    OAuth,
+}
+impl EndpointBase {
+    pub fn get_str(&self) -> &str {
+        match self {
+            EndpointBase::Regular => "https://reddit.com",
+            EndpointBase::OAuth => "https://oauth.reddit.com",
+        }
+    }
+}
 
-impl Endpoint {
-    pub const REDDIT_URL: &'static str = "https://api.reddit.com";
-    pub const REDDIT_OAUTH_HOST: &'static str = "oauth.reddit.com";
+/// Build an endpoint without the base attached.
+/// E.g. /r/rust/top
+pub struct EndpointBuilder(Cow<'static, str>);
 
-    pub fn new(ep: &str) -> Endpoint {
-        Endpoint(Cow::Owned(ep.to_owned()))
+impl EndpointBuilder {
+    pub fn new(ep: &str) -> Self {
+        EndpointBuilder(Cow::Owned(ep.to_owned()))
+    }
+
+    fn replace(&self, needle: &str, haystack: &str) -> EndpointBuilder {
+        EndpointBuilder(self.0.as_ref().replace(needle, haystack).into())
     }
 
     uri_segments! {
@@ -57,39 +73,46 @@ impl Endpoint {
         user
     }
 
-    fn replace(&self, needle: &str, haystack: &str) -> Endpoint {
-        Endpoint(self.0.as_ref().replace(needle, haystack).into())
+    pub fn regular(self) -> io::Result<Endpoint> {
+        Endpoint::new(EndpointBase::Regular, self)
     }
+}
 
-    pub fn as_url(&self) -> io::Result<Url> {
-        let url = Url::parse(Endpoint::REDDIT_URL)
+#[derive(Clone)]
+pub struct Endpoint(Url);
+impl Endpoint {
+    pub fn new(base: EndpointBase, ep: EndpointBuilder) -> io::Result<Endpoint> {
+        let ep_url = Url::parse(base.get_str())
             .unwrap()
-            .join(&self.0)
+            .join(ep.0.as_ref())
             .map_err(|_| {
                 io::Error::new(
                     io::ErrorKind::InvalidInput,
-                    format!("Invalid for url: {}", &self.0),
+                    format!("Invalid url: {}", ep.0),
                 )
-            })?;
-
-        Ok(url)
+            })?
+            .join(".json")
+            .unwrap();
+        Ok(Endpoint(ep_url))
     }
 
-    pub fn as_api_endpoint(&self) -> io::Result<Url> {
-        let api_endpoint = self.as_url()?.join(".json").unwrap();
-        Ok(api_endpoint)
+    pub fn build(ep_str: &str) -> EndpointBuilder {
+        EndpointBuilder::new(ep_str)
     }
 
-    pub fn as_filter_url(
-        &self,
+    pub fn to_url(&self) -> Url {
+        self.0.clone()
+    }
+
+    pub fn filter(
+        mut self,
         q: Option<&str>,
         sort: SearchSort,
         before: Option<&str>,
         after: Option<&str>,
-    ) -> io::Result<Url> {
-        let mut url = self.as_api_endpoint()?;
+    ) -> Endpoint {
         {
-            let mut query = url.query_pairs_mut();
+            let mut query = self.0.query_pairs_mut();
             query.append_pair("restrict_sr", "on");
             if let Some(search_string) = q {
                 query.append_pair("q", search_string);
@@ -104,7 +127,7 @@ impl Endpoint {
                 query.append_pair("before", &before_thing.as_ref());
             }
         }
-        Ok(url)
+        self
     }
 }
 

@@ -9,7 +9,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let r = Reddit::new()?;
 
     let all = r.subreddit("all");
-    let feed = all.feed().delay(Duration::from_secs(5));
+    let feed = all.feed()?.delay(Duration::from_secs(5));
 
     let mut rx = feed.start()?;
 

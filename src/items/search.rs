@@ -52,12 +52,13 @@ impl<'r, 's, T: AbstractedApi<'r>> RedditSearch<'r, 's, T> {
     ) -> io::Result<RedditSearch<'r, 's, T>> {
         let ep = params
             .endpoint
-            .as_filter_url(Some(params.query), params.sort, before, after)?;
+            .clone()
+            .filter(Some(params.query), params.sort, before, after);
 
         let search = params
             .reddit
             .app
-            .create_request::<RedditResponseGeneric<SearchInfo<T::ApiType>>>(ep)
+            .create_request::<RedditResponseGeneric<SearchInfo<T::ApiType>>>(ep.to_url())
             .await?
             .data;
 

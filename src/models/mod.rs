@@ -8,17 +8,59 @@ mod search;
 mod subreddit;
 mod user;
 
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 
 pub use crate::models::{
-    comment::CommentData,
+    comment::{CommentData, SendComment},
     listing::ListingData,
     metadata::{ModerateData, VoteData},
-    post::{PostImage, PostImages, PostInfo, PostPreview},
+    post::{PostImage, PostImages, PostInfo, PostPreview, PostSetFlair, PostEditText},
     search::SearchInfo,
-    subreddit::SubredditInfo,
+    subreddit::{SubredditInfo, SubredditSubmit, SubredditSubmitLink, SubredditSubmitText, SubredditSubmitResponse},
     user::UserInfo,
 };
+
+#[derive(Deserialize)]
+pub struct EmptyResponse();
+
+
+#[derive(Deserialize, Clone, Debug)]
+pub struct RedditPostResponseJson<T> {
+    pub errors: Vec<String>,
+    pub data: Option<T>,
+}
+
+#[derive(Deserialize, Clone, Debug)]
+pub struct RedditPostResponse<T> {
+    pub json: RedditPostResponseJson<T>,
+}
+
+
+
+
+#[derive(Serialize, Clone, Debug)]
+pub struct RedditJsonApiType<T> {
+    pub api_type: &'static str,
+    #[serde(flatten)]
+    pub data: T,
+}
+
+impl<T> RedditJsonApiType<T>{
+    pub fn new(data: T) -> Self{
+        Self{
+            api_type: "json",
+            data
+        }
+    }
+}
+
+
+#[derive(Serialize, Clone, Debug)]
+pub struct RedditSetState<'a, T> {
+    pub id: &'a str,
+    pub state: T,
+}
+
 
 #[derive(Deserialize, Clone, Debug)]
 pub struct RedditResponseGeneric<T> {

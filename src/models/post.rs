@@ -1,6 +1,6 @@
 use crate::models::{ModerateData, VoteData};
 
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 
 #[derive(Deserialize, Debug, Clone, Default)]
 pub struct PostImage {
@@ -43,7 +43,6 @@ pub struct PostInfo {
     pub nsfw: bool,
 
     pub author: String,
-    pub name: String,
     pub permalink: Option<String>,
     pub domain: Option<String>,
     pub link_flair_css_class: Option<String>,
@@ -65,6 +64,20 @@ pub struct PostInfo {
 use crate::feed::Feedable;
 impl Feedable for PostInfo {
     fn feed_id(&self) -> String {
-        self.name.clone()
+        self.moderate_data.name.clone()
     }
+}
+
+#[derive(Serialize)]
+pub struct PostSetFlair<'a> {
+    pub css_class: &'a str,
+    pub link: &'a str,
+    pub text: &'a str,
+}
+
+
+#[derive(Serialize)]
+pub struct PostEditText<'a> {
+    pub thing_id: &'a str,
+    pub new_text: &'a str,
 }

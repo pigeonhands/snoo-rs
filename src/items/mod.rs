@@ -9,7 +9,7 @@ use crate::reddit::Reddit;
 use serde::de::DeserializeOwned;
 
 pub use post::Post;
-pub use submission::{Submission,Comment};
+pub use submission::{Comment, Submission};
 pub use subreddit::{Subreddit, SubredditLink};
 pub use user::{RedditUser, RedditUserLink};
 

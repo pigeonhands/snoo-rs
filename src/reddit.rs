@@ -1,5 +1,10 @@
 //! Reddit client.
-use crate::models::{ListingData, RedditResponse, RedditResponseGeneric};
+use crate::models::{
+    ListingData, 
+    RedditResponse, 
+    RedditResponseGeneric,
+    RedditJsonApiType
+};
 
 use crate::items::{
     search::{PostSearch, SubredditSearch, UserSearch},
@@ -14,7 +19,7 @@ use crate::endpoints::{self, Endpoint, EndpointBuilder, SearchSort};
 use crate::rate_limit::RateLimiter;
 use crate::reddit_api::RedditApi;
 
-use serde::de::DeserializeOwned;
+use serde::{de::DeserializeOwned, Serialize};
 use std::io;
 
 /// A new reddit client.
@@ -23,7 +28,7 @@ use std::io;
 /// let r = Reddit::new()?;
 /// ```
 ///
-/// 
+///
 /// ```
 /// // An authenicated script application
 /// let r = Reddit::new_script("snoo-rs", "password", "id", "secret").await?;
@@ -65,7 +70,7 @@ impl Reddit {
 
     /// Takes an api model and binds it to the
     /// [Reddit] instance so api calls can be made.
-    /// 
+    ///
     /// e.g.
     /// Takes [PostInfo](crate::models::PostInfo) and turns it into [Post](crate::items::Post)
     pub fn bind<'r, T: AbstractedApi<'r>>(&'r self, api_data: T::ApiType) -> T::AbstractedType {
@@ -84,7 +89,7 @@ impl Reddit {
         self.api.create_endpoint_str(str_ep)
     }
 
-    /// Creates a rewuest to the reddit api and
+    /// Creates a rewuest to the a api and
     // returns the json `"data"` section as [T]
     pub(crate) async fn get_data<T: DeserializeOwned>(
         &self,
@@ -93,6 +98,16 @@ impl Reddit {
         self.api
             .get_api::<RedditResponseGeneric<T>>(ep.to_url())
             .await
+    }
+
+    /// Creates a post request to a reddit api
+    pub async fn post_data<S:Serialize, R: DeserializeOwned>(&self, target_url: Endpoint, data: &S) -> io::Result<R> {
+        self.api.post_api(target_url.to_url(), &RedditJsonApiType::new(data)).await
+    }
+
+    /// Sets the state of a thing
+    pub async fn set_state<T: Serialize>(&self, target_url: Endpoint, id:&str, state: T) -> io::Result<()>{
+        self.api.set_state(target_url.to_url(), id, state).await
     }
 
     pub(crate) async fn get_list<T: DeserializeOwned>(&self, ep: Endpoint) -> io::Result<Vec<T>> {
@@ -150,11 +165,17 @@ impl Reddit {
     }
 
     /// Get [Submission] from a post url
+    /// TODO: FIX THIS
     pub async fn submission_from_link(&self, url: &'_ str) -> io::Result<Submission<'_>> {
         let page_link = self.ep_str(url)?;
-        let post_data = self
-            .get_data::<ListingData<RedditResponse>>(page_link)
+
+        let mut post_data = self.api
+            .get_api::<Vec<RedditResponseGeneric<ListingData<RedditResponse>>>>(page_link.to_url())
             .await?;
-        Ok(Submission::from_resp(self, post_data.data))
+        let post = post_data.swap_remove(0);
+        let comments = post_data.swap_remove(1);
+
+        Err(io::Error::new(io::ErrorKind::Other, "Noe done."))
+       // Ok(Submission::from_resp(self, post.data, comments.data))
     }
 }

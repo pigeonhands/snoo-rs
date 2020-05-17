@@ -1,15 +1,37 @@
 use crate::endpoints::{self, SearchSort};
 use crate::feed::ContentStream;
-use crate::models::{PostInfo, SubredditInfo};
 use crate::reddit::Reddit;
 
 use crate::items::{post::Post, search::PostSearch, AbstractedApi};
+use crate::models::{
+    PostInfo, 
+    SubredditInfo, 
+    SubredditSubmit,
+    SubredditSubmitResponse, 
+    SubredditSubmitLink, 
+    SubredditSubmitText
+};
+
 
 use reqwest::Url;
 
 use chrono::{prelude::*, DateTime, Utc};
 
 use std::io;
+
+pub enum SubredditSubmission<'a>{
+    Link(&'a str),
+    Text(&'a str)
+}
+
+impl SubredditSubmission<'_>{
+    pub fn kind(&self) -> &'static str {
+        match self{
+            SubredditSubmission::Link(_) => "link",
+            SubredditSubmission::Text(_) => "self",
+        }
+    }
+}
 
 pub struct SubredditLink<'r> {
     pub reddit: &'r Reddit,
@@ -65,6 +87,32 @@ impl<'r> SubredditLink<'r> {
             .ep(endpoints::SUBREDDIT_SEARCH.subreddit(&self.subreddit))?;
         PostSearch::new_search(self.reddit, search_ep, query, sort).await
     }
+
+
+    pub async fn submit(&self, title: &str, submission: SubredditSubmission<'_>) -> io::Result<SubredditSubmitResponse> {
+        let submit = SubredditSubmit {
+            kind: submission.kind(),
+            sr: self.name(),
+            title: title,
+            resubmit: true,
+            iden: None,
+            captcha: None,
+        };
+       
+        let target_url = self.reddit.ep(endpoints::SUBMIT.subreddit(&self.name()))?;
+       
+        match submission {
+            SubredditSubmission::Link(link) => self.reddit.post_data::<_, SubredditSubmitResponse>(target_url,  &SubredditSubmitLink {
+                submit: submit,
+                url: link
+            }).await,
+            SubredditSubmission::Text(body) =>  self.reddit.post_data::<_, SubredditSubmitResponse>(target_url, &SubredditSubmitText {
+                submit: submit,
+                text: body   
+            }).await
+        }
+    }
+
 }
 
 pub struct Subreddit<'r> {
@@ -114,6 +162,10 @@ impl<'r> Subreddit<'r> {
         } else {
             None
         }
+    }
+
+    pub async fn submit_text(&self, title: &str, body: &str) -> io::Result<SubredditSubmitResponse> {
+        self.link.submit(title, SubredditSubmission::Text(body)).await
     }
 }
 

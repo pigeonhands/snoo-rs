@@ -4,10 +4,13 @@ use crate::rate_limit::{RateLimiter, RateLimiterTracker};
 
 use reqwest::{Client, Response, Url};
 use serde::de::DeserializeOwned;
+use serde::ser::Serialize;
 use std::io;
+use serde_urlencoded;
 
 use crate::endpoints::{self, Endpoint, EndpointBase, EndpointBuilder};
 
+use crate::models::{RedditSetState, RedditPostResponse};
 use crate::models::auth::{AuthResponse, OAuthMeResponse};
 
 #[derive(Clone)]
@@ -185,7 +188,7 @@ impl RedditApi {
     /// Create an endpoint from a string
     /// Same as ```create_endpoint(Endpoint::build("my-endpoint")```
     pub fn create_endpoint_str(&self, str_ep: &str) -> io::Result<Endpoint> {
-        self.create_endpoint(Endpoint::build(str_ep))
+        self.create_endpoint(Endpoint::from_full(str_ep)?)
     }
 
     /// Validates status code and updates the
@@ -228,14 +231,15 @@ impl RedditApi {
         Ok(())
     }
 
-    /// Creates a GET request to an endpoint with
-    /// the applications rate limiter and session/cookies/auth.
-    pub async fn get_api<T: DeserializeOwned>(&self, target_url: Url) -> io::Result<T> {
+    async fn send_request(
+        &self,
+        request: reqwest::RequestBuilder,
+    ) -> io::Result<reqwest::Response> {
         if self.rate_limiter.should_wait() {
             self.rate_limiter.wait().await;
         }
 
-        let mut req = self.client.get(target_url);
+        let mut req = request;
 
         if let AuthType::OAuth(token) = &self.auth {
             req = req.bearer_auth(token);
@@ -247,8 +251,16 @@ impl RedditApi {
                 format!("Failed to send get request. {}", e),
             )
         })?;
-
         self.handle_http_response(&resp)?;
+        Ok(resp)
+    }
+
+    /// Creates a GET request to an endpoint with
+    /// the applications rate limiter and session/cookies/auth.
+    pub async fn get_api<T: DeserializeOwned>(&self, target_url: Url) -> io::Result<T> {
+
+        let req = self.client.get(target_url);
+        let resp = self.send_request(req).await?;
 
         let data = resp.json::<T>().await.map_err(|e| {
             io::Error::new(
@@ -258,6 +270,42 @@ impl RedditApi {
         })?;
 
         Ok(data)
+    }
+
+     /// post request to reddit api with json response
+    pub async fn post_api<R: DeserializeOwned, D: Serialize>(&self, mut target_url: Url, data: &D) -> io::Result<R> {
+
+        let url_str= serde_urlencoded::to_string(data).map_err(|_| io::Error::new(io::ErrorKind::InvalidInput, "bad url query"))?;
+        target_url.set_query(Some(&url_str));
+
+        let req = self.client.post(target_url);
+        let resp = self.send_request(req).await?;
+
+       // return  Err(io::Error::new(io::ErrorKind::Other, "Early exit"));
+        let api_resp = resp.json::<RedditPostResponse<R>>().await.map_err(|e| {
+            io::Error::new(
+                io::ErrorKind::ConnectionAborted,
+                format!("Failed to deseralize response. {}", e),
+            )
+        })?.json;
+
+        if api_resp.errors.len() > 0 {
+            Err(
+                io::Error::new(io::ErrorKind::Other, format!("Api errors: [{}]", api_resp.errors.join(", ")))
+            )?;
+        }
+
+        api_resp.data.ok_or_else(|| io::Error::new(io::ErrorKind::InvalidData, "No data in response."))
+        
+    }
+
+    /// Setst the state of a thing
+    pub async fn set_state<T: Serialize>(&self, target_url: Url, id:&str, state: T) -> io::Result<()>{
+        self.post_api(target_url, &RedditSetState{
+            id,
+            state
+        }).await?;
+        Ok(())
     }
 }
 

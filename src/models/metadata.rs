@@ -26,6 +26,7 @@ pub struct ModerateData {
     #[serde(rename = "stickied")]
     pub is_stickied: bool,
 
+    pub name: String,
     pub author_flair_css_class: Option<String>,
     pub author_flair_text: Option<String>,
     pub edited: VoteEdited,

@@ -15,7 +15,7 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     println!("Starting feed...");
     while let Some(d) = rx.recv().await {
-        println!("{} \t {}", d.created, d.name);
+        println!("{} \t {}", d.created, d.moderate_data.name);
     }
     Ok(())
 }

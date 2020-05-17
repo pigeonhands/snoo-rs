@@ -1,8 +1,10 @@
-use crate::models::{CommentData, ListingData, PostInfo, RedditResponse};
+use crate::models::{CommentData, ListingData, PostInfo, RedditResponse, SendComment};
 
 use crate::reddit::Reddit;
 
 use crate::items::{post::Post, user::RedditUserLink, AbstractedApi};
+use std::io;
+use crate::endpoints;
 
 /// A submission is a full reddit post
 /// It is a [Post] with a list of [Comment]s
@@ -12,23 +14,11 @@ pub struct Submission<'r> {
 }
 
 impl<'r> Submission<'r> {
-    pub(crate) fn from_resp(reddit: &'r Reddit, listing: ListingData<RedditResponse>) -> Self {
-        let mut op = PostInfo::default();
-        let mut comments = Vec::new();
-
-        for l in listing.children {
-            match l.data {
-                RedditResponse::Post(post) => op = post,
-                RedditResponse::Comment(api_data) => {
-                    comments.push(reddit.bind::<Comment>(api_data))
-                }
-                _ => {}
-            }
-        }
+    pub(crate) fn from_resp(reddit: &'r Reddit, op: ListingData<PostInfo>, comments: ListingData<CommentData>) -> Self {
 
         Self {
-            op: reddit.bind::<Post>(op),
-            comments: comments,
+            op: reddit.bind::<Post>(op.children[0]),
+            comments: comments.children,
         }
     }
 
@@ -55,6 +45,18 @@ impl Comment<'_> {
 
     pub fn author(&self) -> RedditUserLink {
         self.reddit.user(&self.data.author)
+    }
+
+    pub fn name(&self) -> &str {
+        self.data.moderate_data.name.as_str()
+    }
+
+    pub async fn reply(&self, message: &str) -> io::Result<()> {
+        let target_url = self.reddit.ep(endpoints::COMMENT)?;
+        self.reddit.post_data(target_url, &SendComment{
+            thing_id: self.name(),
+            text: message,
+        }).await
     }
 }
 

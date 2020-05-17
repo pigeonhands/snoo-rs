@@ -3,7 +3,7 @@ use tokio;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let r = Reddit::new_script("snoo-rs", "password", "id", "secret").await?;
+    let r = Reddit::new_script("snoo-rs", env!("REDDIT_PASSWORD"), env!("REDDIT_ID"), env!("REDDIT_SECRET")).await?;
 
     let me = r.api.me().await?;
     println!("{:?}", me);

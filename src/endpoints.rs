@@ -112,6 +112,12 @@ impl Endpoint {
         EndpointBuilder::new(ep_str)
     }
 
+    pub fn from_full(ep_str: &str) -> io::Result<EndpointBuilder> {
+        let url = Url::parse(ep_str).map_err(|e| io::Error::new(io::ErrorKind::InvalidInput, "Bad url."))?;
+
+        Ok(EndpointBuilder::new(url.path()))
+    }
+
     pub fn to_url(&self) -> Url {
         self.0.clone()
     }

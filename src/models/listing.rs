@@ -4,7 +4,7 @@ use serde::Deserialize;
 #[derive(Deserialize, Debug, Clone)]
 pub struct ListingData<T> {
     pub modhash: Option<String>,
-    pub dist: i32,
+    pub dist: Option<i32>,
     pub children: Vec<RedditResponseGeneric<T>>,
 }
 

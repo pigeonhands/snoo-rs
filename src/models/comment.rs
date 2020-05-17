@@ -1,5 +1,12 @@
 use crate::models::{ModerateData, RedditResponse, VoteData};
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
+
+
+#[derive(Serialize)]
+pub struct SendComment<'a> {
+    pub thing_id: &'a str,
+    pub text : &'a str,
+}
 
 #[derive(Deserialize, Debug, Clone)]
 #[serde(untagged)]

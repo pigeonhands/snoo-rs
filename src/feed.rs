@@ -68,7 +68,7 @@ where
             //Yikes
             self.reddit
                 .api
-                .create_request::<RedditResponseGeneric<SearchInfo<T>>>(endpoint.to_url())
+                .get_api::<RedditResponseGeneric<SearchInfo<T>>>(endpoint.to_url())
                 .await?
                 .data
                 .results
@@ -94,7 +94,7 @@ where
             let search = self
                 .reddit
                 .api
-                .create_request::<RedditResponseGeneric<SearchInfo<T>>>(ep.to_url())
+                .get_api::<RedditResponseGeneric<SearchInfo<T>>>(ep.to_url())
                 .await
                 .unwrap()
                 .data

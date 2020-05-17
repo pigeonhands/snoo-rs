@@ -1,3 +1,5 @@
+//! To get started, create a new [Reddit] instance.
+//! see the [/example](https://github.com/pigeonhands/snoo-rs/tree/master/examples) folder on the repo to for examples.
 pub mod endpoints;
 pub mod feed;
 pub mod items;

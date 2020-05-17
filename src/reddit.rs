@@ -1,3 +1,4 @@
+//! Reddit client.
 use crate::models::{ListingData, RedditResponse, RedditResponseGeneric};
 
 use crate::items::{
@@ -16,13 +17,15 @@ use crate::reddit_api::RedditApi;
 use serde::de::DeserializeOwned;
 use std::io;
 
-/// An unauthenicated application:
+/// A new reddit client.
 /// ```
+/// // An unauthenicated application:
 /// let r = Reddit::new()?;
 /// ```
 ///
-/// An authenicated script application:
+/// 
 /// ```
+/// // An authenicated script application
 /// let r = Reddit::new_script("snoo-rs", "password", "id", "secret").await?;
 /// ```
 ///
@@ -88,7 +91,7 @@ impl Reddit {
         ep: Endpoint,
     ) -> io::Result<RedditResponseGeneric<T>> {
         self.api
-            .create_request::<RedditResponseGeneric<T>>(ep.to_url())
+            .get_api::<RedditResponseGeneric<T>>(ep.to_url())
             .await
     }
 

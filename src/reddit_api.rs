@@ -16,8 +16,7 @@ enum AuthType {
     None,
 }
 
-/// A 'connection' to reddit
-/// Controlls how a `Reddit` instance communicates with the reddit http api.
+/// A connection to the reddit api.
 #[derive(Clone)]
 pub struct RedditApi {
     client: Client,
@@ -167,7 +166,7 @@ impl RedditApi {
 
     pub async fn me(&self) -> io::Result<OAuthMeResponse> {
         let target_url = endpoints::ME.oauth_ep()?.to_url();
-        self.create_request::<OAuthMeResponse>(target_url).await
+        self.get_api::<OAuthMeResponse>(target_url).await
     }
 
     /// Creates a new endpoint with the corrent base depending on
@@ -231,7 +230,7 @@ impl RedditApi {
 
     /// Creates a GET request to an endpoint with
     /// the applications rate limiter and session/cookies/auth.
-    pub async fn create_request<T: DeserializeOwned>(&self, target_url: Url) -> io::Result<T> {
+    pub async fn get_api<T: DeserializeOwned>(&self, target_url: Url) -> io::Result<T> {
         if self.rate_limiter.should_wait() {
             self.rate_limiter.wait().await;
         }

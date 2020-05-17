@@ -8,7 +8,7 @@ use crate::items::{
     AbstractedApi,
 };
 
-use crate::endpoints::{self, Endpoint, EndpointBase, EndpointBuilder, SearchSort};
+use crate::endpoints::{self, Endpoint, EndpointBuilder, SearchSort};
 
 use crate::rate_limit::RateLimiter;
 use crate::reddit_app::RedditApp;
@@ -16,21 +16,44 @@ use crate::reddit_app::RedditApp;
 use serde::de::DeserializeOwned;
 use std::io;
 
-/// Reddit client instance
+/// An unauthenicated application:
+/// ```
+/// let r = Reddit::new()?;
+/// ```
+///
+/// An authenicated script application:
+/// ```
+/// let r = Reddit::new_script("snoo-rs", "password", "id", "secret").await?;
+/// ```
+///
 #[derive(Clone)]
 pub struct Reddit {
-    pub(crate) app: RedditApp,
+    pub app: RedditApp,
 }
 
 impl Reddit {
-    pub fn new() -> io::Result<Reddit> {
-        Ok(Reddit {
-            app: RedditApp::new()?,
-        })
-    }
-
+    /// Creates a new Reddit instance with a given Application instance
     pub fn from_app(app: RedditApp) -> io::Result<Reddit> {
         Ok(Reddit { app: app })
+    }
+
+    /// Creates a new reddit insance with an unauthenicated
+    /// and not rate limited [RedditApp].
+    /// Same as 
+    /// ```Reddit::from_app(RedditApp::new()?)```
+    pub fn new() -> io::Result<Reddit> {
+        Reddit::from_app(RedditApp::new()?)
+    }
+
+    /// Creates a new reddit insance with an
+    /// authenitated script [RedditApp].
+    pub async fn new_script(
+        username: &str,
+        password: &str,
+        id: &str,
+        secret: &str,
+    ) -> io::Result<Reddit> {
+        Reddit::from_app(RedditApp::new_script(username, password, id, secret).await?)
     }
 
     /// Takes a Api model and binds it to the
@@ -39,16 +62,20 @@ impl Reddit {
         T::from_parent(self, api_data)
     }
 
-    /// Builds a new ep
+    /// Builds a new endpoint
+    /// calls [RedditApp::create_endpoint]
     pub fn ep(&self, builder: EndpointBuilder) -> io::Result<Endpoint> {
         self.app.create_endpoint(builder)
     }
 
-    /// Builds a new ep from a string
+    /// Builds a new endpoint from a string
+    /// calls [RedditApp::create_endpoint_str]
     pub fn ep_str(&self, str_ep: &str) -> io::Result<Endpoint> {
-        self.app.create_enddpoint_str(str_ep)
+        self.app.create_endpoint_str(str_ep)
     }
 
+    /// Creates a rewuest to the reddit api and
+    // returns the json `"data"` section as [T]
     pub(crate) async fn get_data<T: DeserializeOwned>(
         &self,
         ep: Endpoint,
@@ -64,23 +91,11 @@ impl Reddit {
         Ok(infos)
     }
 
-    /// No rate limiting.
-    pub fn rate_limit_off(mut self) -> Self {
-        self.app.rate_limiter = RateLimiter::Off;
-        self
-    }
-
-    /// Make requests as quick as possable until limit is
-    /// reached, then wait for reset.
-    pub fn rate_limit_bacthed(mut self) -> Self {
-        self.app.rate_limiter = RateLimiter::new_batched();
-        self
-    }
-
-    /// Every request will wait (requests_avalible) / (time_avalible)
-    /// so the delays are evenly spaced.
-    pub fn rate_limit_paced(mut self) -> Self {
-        self.app.rate_limiter = RateLimiter::new_paced();
+    /// Set the rate limiter for the application
+    /// e.g. 
+    /// [RateLimiter::new_batched()] or [RateLimiter::new_paced()]
+    pub fn rate_limiter(mut self, limiter: RateLimiter) -> Self {
+        self.app.rate_limiter = limiter;
         self
     }
 
@@ -124,8 +139,7 @@ impl Reddit {
         UserSearch::new_search(self, search_ep, query, sort).await
     }
 
-    /// Get post info
-    /// a "Submission" is a post + comments
+    /// Get [Submission] from a post url
     pub async fn submission_from_link(&self, url: &'_ str) -> io::Result<Submission<'_>> {
         let page_link = self.ep_str(url)?;
         let post_data = self

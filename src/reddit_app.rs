@@ -15,6 +15,8 @@ enum AuthType {
     None,
 }
 
+/// A 'connection' to reddit
+/// Controlls how a `Reddit` instance communicates with the reddit http api.
 #[derive(Clone)]
 pub struct RedditApp {
     client: Client,
@@ -48,6 +50,7 @@ impl RedditApp {
         })
     }
 
+    /// Creates a new authenicated script application
     pub async fn new_script(
         username: &str,
         password: &str,
@@ -100,7 +103,11 @@ impl RedditApp {
         self.create_request::<OAuthMeResponse>(target_url).await
     }
 
-    /// Builds a new ep
+    /// Creates a new endpoint with the corrent base depending on
+    /// the authentication state of the application.
+    /// e.g.
+    /// No authenticaion => www.reddit,
+    /// Authenitcated => oauth.reddit
     pub fn create_endpoint(&self, builder: EndpointBuilder) -> io::Result<Endpoint> {
         let ep_base = match self.auth {
             AuthType::None => EndpointBase::Regular,
@@ -109,8 +116,9 @@ impl RedditApp {
         Endpoint::new(ep_base, builder)
     }
 
-    /// Builds a new ep from a string
-    pub fn create_enddpoint_str(&self, str_ep: &str) -> io::Result<Endpoint> {
+    /// Create an endpoint from a string
+    /// Same as ```create_endpoint(Endpoint::build("my-endpoint")```
+    pub fn create_endpoint_str(&self, str_ep: &str) -> io::Result<Endpoint> {
         self.create_endpoint(Endpoint::build(str_ep))
     }
 
@@ -148,14 +156,14 @@ impl RedditApp {
 
             if let Some(tracker) = get_tracker() {
                 self.rate_limiter.update(tracker);
-            } else {
-                println!("No tracker.");
             }
         }
 
         Ok(())
     }
-    /// Used for all [GET] api calls.
+    
+    /// Creates a GET request to an endpoint with
+    /// the applications rate limiter and session/cookies/auth.
     pub async fn create_request<T: DeserializeOwned>(&self, target_url: Url) -> io::Result<T> {
         if self.rate_limiter.should_wait() {
             self.rate_limiter.wait().await;

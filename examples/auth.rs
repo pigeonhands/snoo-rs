@@ -1,14 +1,12 @@
-use snoo::{Reddit, RedditApp, SearchSort};
+use snoo::{Reddit, SearchSort};
 use tokio;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    let app = RedditApp::new_script("snoo-rs", "password", "id", "secret").await?;
+    let r = Reddit::new_script("snoo-rs", "password", "id", "secret").await?;
 
-    let me = app.me().await?;
+    let me = r.app.me().await?;
     println!("{:?}", me);
-
-    let r = Reddit::from_app(app)?;
 
     let pigeon_posts = r.search("rust", SearchSort::New).await?;
 

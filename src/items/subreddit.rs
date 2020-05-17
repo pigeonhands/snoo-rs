@@ -73,6 +73,7 @@ pub struct Subreddit<'r> {
 }
 
 impl<'r> Subreddit<'r> {
+    /// Returns the underlying [SubredditInfo] model.
     pub fn info(&self) -> &SubredditInfo {
         &self.info
     }

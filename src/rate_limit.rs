@@ -4,6 +4,7 @@ use tokio::time::{delay_for, delay_until, Duration, Instant};
 use std::sync::Arc;
 use tokio::sync::Mutex;
 
+/// Rate limiter for `RedditApp` requests
 #[derive(Clone)]
 pub enum RateLimiter {
     Batched(RateLimiterBatched),
@@ -16,9 +17,12 @@ impl RateLimiter {
     pub const USED_HEADER: &'static str = "x-ratelimit-used";
     pub const REMANING_HEADER: &'static str = "x-ratelimit-remaining";
 
+    /// Creates a new rate limiter using [RateLimiterBatched]
     pub fn new_batched() -> RateLimiter {
         RateLimiter::Batched(RateLimiterBatched::new())
     }
+
+    /// Creates a new rate limiter using [RateLimiterPaced]
     pub fn new_paced() -> RateLimiter {
         RateLimiter::Paced(RateLimiterPaced::new())
     }

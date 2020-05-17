@@ -48,7 +48,7 @@ pub enum EndpointBase {
 impl EndpointBase {
     pub fn get_str(&self) -> &str {
         match self {
-            EndpointBase::Regular => "https://reddit.com",
+            EndpointBase::Regular => "https://www.reddit.com",
             EndpointBase::OAuth => "https://oauth.reddit.com",
             EndpointBase::SSL => "https://ssl.reddit.com",
         }

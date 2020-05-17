@@ -1,3 +1,19 @@
+//! A feed of content.
+//! e.g.
+//! a feed of new [crate::item::submission::Post] from a [crate::item::subreddit::Subreddit]
+//! 
+//! ```
+//! let r = Reddit::new()?;
+//! let all = r.subreddit("all");
+//! 
+//! let feed = all.feed()?.delay(Duration::from_secs(5));
+//! let mut rx = feed.start()?;
+//! 
+//! while let Some(d) = rx.recv().await {
+//!     println!("{} \t {}", d.created, d.name);
+//! }
+//! 
+//! ```
 use crate::reddit::Reddit;
 
 use crate::endpoints::{Endpoint, SearchSort};
@@ -38,6 +54,8 @@ where
         }
     }
 
+    /// delay between polling the api
+    /// default: 3s
     pub fn delay(mut self, delay: Duration) -> Self {
         self.delay = delay;
         self
@@ -96,6 +114,7 @@ where
         }
     }
 
+    /// start polling the feed and return the new items.
     pub fn start(self) -> io::Result<mpsc::Receiver<T>> {
         let (tx, rx) = mpsc::channel(10);
         tokio::spawn(async { self.read_feed(tx).await });

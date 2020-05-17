@@ -24,6 +24,7 @@ impl<'r> AbstractedApi<'r> for Post<'r> {
 }
 
 impl Post<'_> {
+    /// Returns the underlying [PostInfo] model.
     pub fn info(&self) -> &PostInfo {
         &self.info
     }

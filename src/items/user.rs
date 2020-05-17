@@ -56,12 +56,13 @@ pub struct RedditUser<'r> {
 }
 
 impl RedditUser<'_> {
-    pub fn name(&self) -> &str {
-        self.info.name.as_ref()
-    }
-
+    /// Returns the underlying [UserInfo] model.
     pub fn info(&self) -> &UserInfo {
         &self.info
+    }
+
+    pub fn name(&self) -> &str {
+        self.info.name.as_ref()
     }
 
     pub fn is_moderator(&self) -> bool {

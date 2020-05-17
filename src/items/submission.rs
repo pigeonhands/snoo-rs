@@ -4,7 +4,8 @@ use crate::reddit::Reddit;
 
 use crate::items::{post::Post, user::RedditUserLink, AbstractedApi};
 
-/// Post + Comments
+/// A submission is a full reddit post
+/// It is a [Post] with a list of [Comment]s
 pub struct Submission<'r> {
     op: Post<'r>,
     comments: Vec<Comment<'r>>,
@@ -47,6 +48,7 @@ pub struct Comment<'r> {
 }
 
 impl Comment<'_> {
+    /// Returns the underlying [CommentData] model.
     pub fn info(&self) -> &CommentData {
         &self.data
     }

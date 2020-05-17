@@ -11,7 +11,7 @@ use crate::items::{
 use crate::endpoints::{self, Endpoint, EndpointBuilder, SearchSort};
 
 use crate::rate_limit::RateLimiter;
-use crate::reddit_app::RedditApp;
+use crate::reddit_api::RedditApi;
 
 use serde::de::DeserializeOwned;
 use std::io;
@@ -28,25 +28,25 @@ use std::io;
 ///
 #[derive(Clone)]
 pub struct Reddit {
-    pub app: RedditApp,
+    pub api: RedditApi,
 }
 
 impl Reddit {
     /// Creates a new Reddit instance with a given Application instance
-    pub fn from_app(app: RedditApp) -> io::Result<Reddit> {
-        Ok(Reddit { app: app })
+    pub fn from_api(api: RedditApi) -> io::Result<Reddit> {
+        Ok(Reddit { api })
     }
 
     /// Creates a new reddit insance with an unauthenicated
-    /// and not rate limited [RedditApp].
+    /// and not rate limited [RedditApi].
     /// Same as
-    /// ```Reddit::from_app(RedditApp::new()?)```
+    /// ```Reddit::from_app(RedditApi::new()?)```
     pub fn new() -> io::Result<Reddit> {
-        Reddit::from_app(RedditApp::new()?)
+        Reddit::from_api(RedditApi::new()?)
     }
 
     /// Creates a new reddit insance with an
-    /// authenitated script [RedditApp].
+    /// authenitated script [RedditApi].
     pub async fn new_script(
         username: &str,
         password: &str,
@@ -54,28 +54,31 @@ impl Reddit {
         secret: &str,
     ) -> io::Result<Reddit> {
         let mut r = Reddit::new()?;
-        r.app
+        r.api
             .authorize_script(username, password, id, secret)
             .await?;
         Ok(r)
     }
 
-    /// Takes a Api model and binds it to the
-    /// Reddit instance so api calls can be made.
+    /// Takes an api model and binds it to the
+    /// [Reddit] instance so api calls can be made.
+    /// 
+    /// e.g.
+    /// Takes [PostInfo](crate::models::PostInfo) and turns it into [Post](crate::items::Post)
     pub fn bind<'r, T: AbstractedApi<'r>>(&'r self, api_data: T::ApiType) -> T::AbstractedType {
         T::from_parent(self, api_data)
     }
 
     /// Builds a new endpoint
-    /// calls [RedditApp::create_endpoint]
+    /// calls [RedditApi::create_endpoint]
     pub fn ep(&self, builder: EndpointBuilder) -> io::Result<Endpoint> {
-        self.app.create_endpoint(builder)
+        self.api.create_endpoint(builder)
     }
 
     /// Builds a new endpoint from a string
-    /// calls [RedditApp::create_endpoint_str]
+    /// calls [RedditApi::create_endpoint_str]
     pub fn ep_str(&self, str_ep: &str) -> io::Result<Endpoint> {
-        self.app.create_endpoint_str(str_ep)
+        self.api.create_endpoint_str(str_ep)
     }
 
     /// Creates a rewuest to the reddit api and
@@ -84,7 +87,7 @@ impl Reddit {
         &self,
         ep: Endpoint,
     ) -> io::Result<RedditResponseGeneric<T>> {
-        self.app
+        self.api
             .create_request::<RedditResponseGeneric<T>>(ep.to_url())
             .await
     }
@@ -99,7 +102,7 @@ impl Reddit {
     /// e.g.
     /// [RateLimiter::new_batched()] or [RateLimiter::new_paced()]
     pub fn rate_limiter(mut self, limiter: RateLimiter) -> Self {
-        self.app.rate_limiter = limiter;
+        self.api.rate_limiter = limiter;
         self
     }
 

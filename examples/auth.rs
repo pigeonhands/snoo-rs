@@ -5,7 +5,7 @@ use tokio;
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let r = Reddit::new_script("snoo-rs", "password", "id", "secret").await?;
 
-    let me = r.app.me().await?;
+    let me = r.api.me().await?;
     println!("{:?}", me);
 
     let pigeon_posts = r.search("rust", SearchSort::New).await?;

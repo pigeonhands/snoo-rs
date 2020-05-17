@@ -1,12 +1,17 @@
+//! Abstractions over the reddit api so they can be interacted with.
 pub mod post;
 pub mod search;
 pub mod submission;
 pub mod subreddit;
 pub mod user;
 
-pub use crate::endpoints::SearchSort;
-pub use crate::reddit::Reddit;
+use crate::reddit::Reddit;
 use serde::de::DeserializeOwned;
+
+pub use post::Post;
+pub use submission::{Submission,Comment};
+pub use subreddit::{Subreddit, SubredditLink};
+pub use user::{RedditUser, RedditUserLink};
 
 // Represents something that is an abstraction over
 // the raw api result model.

@@ -1,10 +1,11 @@
+//! Rate limiters for the api requests
 use std::cell::Cell;
 use tokio::time::{delay_for, delay_until, Duration, Instant};
 
 use std::sync::Arc;
 use tokio::sync::Mutex;
 
-/// Rate limiter for `RedditApp` requests
+/// Rate limiter for `RedditApi` requests
 #[derive(Clone)]
 pub enum RateLimiter {
     Batched(RateLimiterBatched),
@@ -90,6 +91,9 @@ impl RateLimiterTracker {
         self.reset_time = Instant::now() + Duration::from_secs(remaning as u64);
     }
 }
+
+/// Makes requests as fast as possable.
+/// When limit is reached, sleeps until it is reset.
 #[derive(Clone)]
 pub struct RateLimiterBatched(Arc<Mutex<Cell<RateLimiterTracker>>>);
 
@@ -126,6 +130,9 @@ impl RateLimiterBatched {
         }
     }
 }
+
+/// Waits between every request so that the request limit is never reached.
+/// The wait is `(time untill reset) / (requests remaning)`
 #[derive(Clone)]
 pub struct RateLimiterPaced(Arc<Mutex<Cell<RateLimiterTracker>>>);
 

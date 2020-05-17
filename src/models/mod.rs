@@ -1,4 +1,4 @@
-//! Contains models for the reddit json api
+//! Models for the reddit json api
 pub mod auth;
 mod comment;
 mod listing;

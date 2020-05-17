@@ -1,6 +1,4 @@
-//! A feed of content.
-//! e.g.
-//! a feed of new [crate::item::submission::Post] from a [crate::item::subreddit::Subreddit]
+//! Pools reddit api and returns new items
 //!
 //! ```
 //! let r = Reddit::new()?;
@@ -69,7 +67,7 @@ where
                 .filter(None, SearchSort::New, None, None);
             //Yikes
             self.reddit
-                .app
+                .api
                 .create_request::<RedditResponseGeneric<SearchInfo<T>>>(endpoint.to_url())
                 .await?
                 .data
@@ -95,7 +93,7 @@ where
 
             let search = self
                 .reddit
-                .app
+                .api
                 .create_request::<RedditResponseGeneric<SearchInfo<T>>>(ep.to_url())
                 .await
                 .unwrap()

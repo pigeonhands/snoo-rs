@@ -57,7 +57,7 @@ impl<'r, 's, T: AbstractedApi<'r>> RedditSearch<'r, 's, T> {
 
         let search = params
             .reddit
-            .app
+            .api
             .create_request::<RedditResponseGeneric<SearchInfo<T::ApiType>>>(ep.to_url())
             .await?
             .data;

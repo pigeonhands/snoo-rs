@@ -1,3 +1,5 @@
+//! Creates requests to the reddit api with the specified
+//! rate limiting and authentication
 use crate::rate_limit::{RateLimiter, RateLimiterTracker};
 
 use reqwest::{Client, Response, Url};
@@ -17,7 +19,7 @@ enum AuthType {
 /// A 'connection' to reddit
 /// Controlls how a `Reddit` instance communicates with the reddit http api.
 #[derive(Clone)]
-pub struct RedditApp {
+pub struct RedditApi {
     client: Client,
     pub(crate) rate_limiter: RateLimiter,
     auth: AuthType,
@@ -29,9 +31,9 @@ fn reqwest_to_io_err(error: reqwest::Error) -> io::Error {
     io::Error::new(io::ErrorKind::Other, format!("{}", error))
 }
 
-impl RedditApp {
+impl RedditApi {
     /// New app with no authenication and no rate limiter.
-    pub fn new() -> io::Result<RedditApp> {
+    pub fn new() -> io::Result<Self> {
         let client = reqwest::Client::builder()
             .user_agent(USER_AGENT)
             .cookie_store(true)
@@ -42,7 +44,7 @@ impl RedditApp {
                     format!("Failed to create http client. {:?}", e),
                 )
             })?;
-        Ok(RedditApp {
+        Ok(Self {
             client: client,
             rate_limiter: RateLimiter::Off,
             auth: AuthType::None,
@@ -107,13 +109,13 @@ impl RedditApp {
         self.authorize(auth).await
     }
 
-    /// Autherise [RedditApp] as an application
+    /// Autherise [RedditApi] as an application
     /// * `id` - reddit application id regstered on reddit
-    /// * `auth_url` - The generated authentication callback url (can be generated with [create_authorization_url])
+    /// * `auth_url` - The generated authentication callback url (can be generated with [RedditApi::create_authorization_url])
     pub async fn authorize_application(
         &mut self,
         code: &str,
-        auth_url: &RedditAppAuthenticationUrl,
+        auth_url: &RedditApiAuthenticationUrl,
     ) -> io::Result<()> {
         let grant = OAuthGrantType::AutherizationCode {
             code,
@@ -129,9 +131,9 @@ impl RedditApp {
     pub async fn create_authorization_url(
         &mut self,
         id: &str,
-        scope: &[RedditAppScope],
+        scope: &[RedditApiScope],
         redirect_url: &str,
-    ) -> io::Result<RedditAppAuthenticationUrl> {
+    ) -> io::Result<RedditApiAuthenticationUrl> {
         let scope_str = scope
             .iter()
             .map(|e| e.as_str())
@@ -156,7 +158,7 @@ impl RedditApp {
             ])
             .to_url();
 
-        Ok(RedditAppAuthenticationUrl::new(
+        Ok(RedditApiAuthenticationUrl::new(
             id.to_owned(),
             redirect_url.as_str().to_owned(),
             Some(state),
@@ -262,13 +264,13 @@ impl RedditApp {
 
 /// Listens on authenticationc callback url for a
 /// autentication code
-pub struct RedditAppAuthenticationUrl {
+pub struct RedditApiAuthenticationUrl {
     id: String,
     redirect_url: String,
     state: Option<String>,
 }
 
-impl RedditAppAuthenticationUrl {
+impl RedditApiAuthenticationUrl {
     pub fn new(id: String, redirect_url: String, state: Option<String>) -> Self {
         Self {
             id,
@@ -318,7 +320,7 @@ impl<'r> OAuthGrantType<'r> {
     }
 }
 
-pub enum RedditAppScope {
+pub enum RedditApiScope {
     Identity,
     Edit,
     Flair,
@@ -341,54 +343,54 @@ pub enum RedditAppScope {
     ModWiki,
 }
 
-impl RedditAppScope {
-    pub fn all() -> Vec<RedditAppScope> {
+impl RedditApiScope {
+    pub fn all() -> Vec<RedditApiScope> {
         vec![
-            RedditAppScope::Identity,
-            RedditAppScope::Edit,
-            RedditAppScope::Flair,
-            RedditAppScope::History,
-            RedditAppScope::PrivateMessages,
-            RedditAppScope::Read,
-            RedditAppScope::Report,
-            RedditAppScope::Save,
-            RedditAppScope::Submit,
-            RedditAppScope::Subscribe,
-            RedditAppScope::Vote,
-            RedditAppScope::WikiEdit,
-            RedditAppScope::WikiRead,
-            RedditAppScope::Account,
-            RedditAppScope::MySubreddits,
-            RedditAppScope::ModConfig,
-            RedditAppScope::ModFlair,
-            RedditAppScope::ModLog,
-            RedditAppScope::ModPost,
-            RedditAppScope::ModWiki,
+            RedditApiScope::Identity,
+            RedditApiScope::Edit,
+            RedditApiScope::Flair,
+            RedditApiScope::History,
+            RedditApiScope::PrivateMessages,
+            RedditApiScope::Read,
+            RedditApiScope::Report,
+            RedditApiScope::Save,
+            RedditApiScope::Submit,
+            RedditApiScope::Subscribe,
+            RedditApiScope::Vote,
+            RedditApiScope::WikiEdit,
+            RedditApiScope::WikiRead,
+            RedditApiScope::Account,
+            RedditApiScope::MySubreddits,
+            RedditApiScope::ModConfig,
+            RedditApiScope::ModFlair,
+            RedditApiScope::ModLog,
+            RedditApiScope::ModPost,
+            RedditApiScope::ModWiki,
         ]
     }
 
     pub fn as_str(&self) -> &'static str {
         match self {
-            RedditAppScope::Identity => "identity",
-            RedditAppScope::Edit => "edit",
-            RedditAppScope::Flair => "flair",
-            RedditAppScope::History => "history",
-            RedditAppScope::PrivateMessages => "privatemessages",
-            RedditAppScope::Read => "read",
-            RedditAppScope::Report => "report",
-            RedditAppScope::Save => "save",
-            RedditAppScope::Submit => "submit",
-            RedditAppScope::Subscribe => "subscribe",
-            RedditAppScope::Vote => "vote",
-            RedditAppScope::WikiEdit => "wikiedit",
-            RedditAppScope::WikiRead => "wikiread",
-            RedditAppScope::Account => "account",
-            RedditAppScope::MySubreddits => "mysubreddits",
-            RedditAppScope::ModConfig => "modconfig",
-            RedditAppScope::ModFlair => "modflair",
-            RedditAppScope::ModLog => "modlog",
-            RedditAppScope::ModPost => "modposts",
-            RedditAppScope::ModWiki => "modwiki",
+            RedditApiScope::Identity => "identity",
+            RedditApiScope::Edit => "edit",
+            RedditApiScope::Flair => "flair",
+            RedditApiScope::History => "history",
+            RedditApiScope::PrivateMessages => "privatemessages",
+            RedditApiScope::Read => "read",
+            RedditApiScope::Report => "report",
+            RedditApiScope::Save => "save",
+            RedditApiScope::Submit => "submit",
+            RedditApiScope::Subscribe => "subscribe",
+            RedditApiScope::Vote => "vote",
+            RedditApiScope::WikiEdit => "wikiedit",
+            RedditApiScope::WikiRead => "wikiread",
+            RedditApiScope::Account => "account",
+            RedditApiScope::MySubreddits => "mysubreddits",
+            RedditApiScope::ModConfig => "modconfig",
+            RedditApiScope::ModFlair => "modflair",
+            RedditApiScope::ModLog => "modlog",
+            RedditApiScope::ModPost => "modposts",
+            RedditApiScope::ModWiki => "modwiki",
         }
     }
 }

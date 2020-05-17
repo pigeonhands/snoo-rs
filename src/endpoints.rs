@@ -88,6 +88,8 @@ impl EndpointBuilder {
     }
 }
 
+/// A full endpoint
+/// E.g. http://www.reddit.com/r/rust/top/.json
 #[derive(Clone)]
 pub struct Endpoint(Url);
 impl Endpoint {

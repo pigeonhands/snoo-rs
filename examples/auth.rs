@@ -1,11 +1,8 @@
-use env_logger;
 use snoo::{Reddit, RedditApp, SearchSort};
 use tokio;
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
-    env_logger::init();
-
     let app = RedditApp::new_script("snoo-rs", "password", "id", "secret").await?;
 
     let me = app.me().await?;

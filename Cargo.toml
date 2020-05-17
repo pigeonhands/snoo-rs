@@ -1,6 +1,6 @@
 [package]
 name = "snoo"
-version = "0.0.4"
+version = "0.0.5"
 authors = ["Sam M <sam.mackenzie@live.com>"]
 edition = "2018"
 license="MIT"
@@ -15,7 +15,5 @@ keywords = ["reddit"]
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 reqwest = { version = "0.10.4", features = ["json", "cookies"] }
-tokio = { version="0.2.21", features=["macros", "time"] }
 chrono = { version = "0.4.11", features=["serde"] }
-env_logger = "0.7.1"
-log = "0.4.0"
+tokio = { version="0.2.21", features=["macros", "time"] }

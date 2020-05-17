@@ -49,9 +49,9 @@ impl<'r> SubredditLink<'r> {
     }
 
     pub async fn top(&self) -> io::Result<Vec<Post<'r>>> {
-        let ep = endpoints::SUBREDDIT_TOP
-            .subreddit(&self.subreddit)
-            .regular()?;
+        let ep = self
+            .reddit
+            .ep(endpoints::SUBREDDIT_TOP.subreddit(&self.subreddit))?;
         Ok(Post::list_of(self.reddit, &self.reddit.get_list(ep).await?))
     }
 

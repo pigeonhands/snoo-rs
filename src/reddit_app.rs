@@ -1,10 +1,10 @@
 use crate::rate_limit::{RateLimiter, RateLimiterTracker};
 
 use reqwest::{Client, Response, Url};
-use serde::{de::DeserializeOwned, Deserialize};
+use serde::de::DeserializeOwned;
 use std::io;
 
-use crate::endpoints::{Endpoint, EndpointBase, EndpointBuilder};
+use crate::endpoints::{self, Endpoint, EndpointBase, EndpointBuilder};
 
 use crate::models::auth::{AuthResponse, OAuthMeResponse};
 
@@ -24,10 +24,11 @@ pub struct RedditApp {
 
 static USER_AGENT: &str = concat!(env!("CARGO_PKG_NAME"), "/", env!("CARGO_PKG_VERSION"),);
 
-impl RedditApp {
-    const ACCESS_TOKEN_ENDPOINT: &'static str = "https://ssl.reddit.com/api/v1/access_token/.json";
-    const OAUTH_ME_ENDPOINT: &'static str = "https://oauth.reddit.com/api/v1/me";
+pub fn reqwest_to_io_err(error: reqwest::Error) -> io::Error {
+    io::Error::new(io::ErrorKind::Other, format!("{}", error))
+}
 
+impl RedditApp {
     /// New app with no authenication and no rate limiter.
     pub fn new() -> io::Result<RedditApp> {
         let client = reqwest::Client::builder()
@@ -63,27 +64,17 @@ impl RedditApp {
 
         let req = app
             .client
-            .post(Self::ACCESS_TOKEN_ENDPOINT)
+            .post(endpoints::ACCESS_TOKEN.ssl_ep()?.to_url())
             .form(&params)
             .basic_auth(id, Some(secret));
 
         let resp = req
             .send()
             .await
-            .map_err(|e| {
-                io::Error::new(
-                    io::ErrorKind::ConnectionAborted,
-                    format!("Request to authenticate failed.: {}", e),
-                )
-            })?
+            .map_err(reqwest_to_io_err)?
             .json::<AuthResponse>()
             .await
-            .map_err(|e| {
-                io::Error::new(
-                    io::ErrorKind::InvalidData,
-                    format!("Failed to deseralize json response. {}", e),
-                )
-            })?;
+            .map_err(reqwest_to_io_err)?;
 
         if let Some(err) = resp.error {
             Err(io::Error::new(
@@ -105,10 +96,8 @@ impl RedditApp {
     }
 
     pub async fn me(&self) -> io::Result<OAuthMeResponse> {
-        let endpoint = Url::parse(Self::OAUTH_ME_ENDPOINT)
-            .map_err(|_| io::Error::new(io::ErrorKind::InvalidInput, "err"))?;
-
-        self.create_request::<OAuthMeResponse>(endpoint).await
+        let target_url = endpoints::ME.oauth_ep()?.to_url();
+        self.create_request::<OAuthMeResponse>(target_url).await
     }
 
     /// Builds a new ep
@@ -135,6 +124,7 @@ impl RedditApp {
             ))?;
         }
 
+        // TODO: Make less ugly.
         if self.rate_limiter.should_update() {
             let headers = resp.headers();
             let read_header = |h| {

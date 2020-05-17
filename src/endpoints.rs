@@ -43,12 +43,14 @@ impl SearchSort {
 pub enum EndpointBase {
     Regular,
     OAuth,
+    SSL,
 }
 impl EndpointBase {
     pub fn get_str(&self) -> &str {
         match self {
             EndpointBase::Regular => "https://reddit.com",
             EndpointBase::OAuth => "https://oauth.reddit.com",
+            EndpointBase::SSL => "https://ssl.reddit.com",
         }
     }
 }
@@ -73,8 +75,16 @@ impl EndpointBuilder {
         user
     }
 
-    pub fn regular(self) -> io::Result<Endpoint> {
+    pub fn regular_ep(self) -> io::Result<Endpoint> {
         Endpoint::new(EndpointBase::Regular, self)
+    }
+
+    pub fn oauth_ep(self) -> io::Result<Endpoint> {
+        Endpoint::new(EndpointBase::OAuth, self)
+    }
+
+    pub fn ssl_ep(self) -> io::Result<Endpoint> {
+        Endpoint::new(EndpointBase::SSL, self)
     }
 }
 
@@ -138,6 +148,7 @@ impl AsRef<str> for Endpoint {
 }
 
 endpoints! {
+    ACCESS_TOKEN =>            "api/v1/access_token/",
     ABOUT_EDITED =>            "r/#subreddit/about/edited/",
     ABOUT_LOG =>               "r/#subreddit/about/log/",
     ABOUT_MODQUEUE =>          "r/#subreddit/about/modqueue/",
